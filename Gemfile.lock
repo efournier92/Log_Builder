@@ -22,7 +22,8 @@ GEM
     racc (1.7.3)
     rainbow (3.1.1)
     regexp_parser (2.9.0)
-    rexml (3.2.6)
+    rexml (3.3.3)
+      strscan
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
       rspec-expectations (~> 3.12.0)
@@ -55,6 +56,7 @@ GEM
       sorbet-runtime (>= 0.5.10782)
     ruby-progressbar (1.13.0)
     sorbet-runtime (0.5.11294)
+    strscan (3.1.0)
     unicode-display_width (2.5.0)
     yaml (0.2.1)
 
