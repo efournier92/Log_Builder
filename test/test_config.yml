@@ -1,3 +1,5 @@
+lg_templates_config:
+  weekdays:
 task_templates_config:
   1_Dimentional:
     - Level_1
