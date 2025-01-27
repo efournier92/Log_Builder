@@ -1,7 +1,6 @@
 require './src/services/file_parser_service'
 require './test/constants/test_constants'
 require 'pathname'
-require 'pry-byebug'
 
 def create_log_file(config_file, print_type, print_year, print_month, output_dir)
   `ruby ./src/run.rb '#{config_file}' '#{print_type}' '#{print_year}' '#{print_month}' '#{output_dir}'`

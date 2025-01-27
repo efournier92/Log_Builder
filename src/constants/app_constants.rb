@@ -22,4 +22,8 @@ module AppConstants
     QUARTER_MONTHS: [1, 4, 7, 10],
     NON_QUARTER_MONTHS: [2, 3, 5, 6, 8, 9, 11, 12]
   }.freeze
+
+  ERROR_MESSAGES = {
+    INVALID_CONFIG_FILE: 'Invalid config file. Exiting...'
+  }.freeze
 end

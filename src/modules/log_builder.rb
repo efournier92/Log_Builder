@@ -14,6 +14,11 @@ class LogBuilder
     @year_number = year_number
     @month = month
     @output_directory = output_directory
+
+    unless valid_config_file?(@config_file)
+      puts AppConstants::ERROR_MESSAGES[:INVALID_CONFIG_FILE]
+      raise SystemExit
+    end
   end
 
   def build_file

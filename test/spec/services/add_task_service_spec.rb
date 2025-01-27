@@ -498,7 +498,7 @@ describe AddTaskService do
       tag = 'Monthly_Task'
       day_number = 15
       config = {
-        ConfigConstants::KEYS[:DAY] => day_number,
+        ConfigConstants::KEYS[:NTH_DAY] => day_number,
         ConfigConstants::KEYS[:TAG] => tag
       }
 
@@ -514,7 +514,7 @@ describe AddTaskService do
       tag = 'Odd_Monthly_Task'
       day_number = 17
       config = {
-        ConfigConstants::KEYS[:DAY] => day_number,
+        ConfigConstants::KEYS[:NTH_DAY] => day_number,
         ConfigConstants::KEYS[:ODD_ONLY?] => true,
         ConfigConstants::KEYS[:TAG] => tag
       }
@@ -536,7 +536,7 @@ describe AddTaskService do
       tag = 'Even_Monthly_Task'
       day_number = 18
       config = {
-        ConfigConstants::KEYS[:DAY] => day_number,
+        ConfigConstants::KEYS[:NTH_DAY] => day_number,
         ConfigConstants::KEYS[:EVEN_ONLY?] => true,
         ConfigConstants::KEYS[:TAG] => tag
       }

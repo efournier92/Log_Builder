@@ -26,15 +26,14 @@ describe LogBuilder do
 
     context 'given the user supplies an invalid config file' do
       let(:invalid_config_file) { StringIO.new('fake_directory/fake_file.md') }
-      let(:builder) { LogBuilder.new('fake_directory/fake_file.md', '', '', '', '') }
+      let(:builder) { LogBuilder.new(invalid_config_file, '', '', '', '') }
 
       it 'informs the user and terminates execution' do
-        # TODO: Finish
-        expect { builder.prompt_for_mode_input }.to output(
-          AppConstants::INPUT_PROMPTS[:MODE]
-        ).to_stdout.and change { builder.mode }.to('DUN')
+        $stdin = invalid_config_file
 
-        expect(valid_mode?(builder.mode)).to be false
+        expect { builder.prompt_for_mode_input }.to output(
+          "#{AppConstants::ERROR_MESSAGES[:INVALID_CONFIG_FILE]}\n"
+        ).to_stdout.and raise_error(SystemExit)
       end
     end
 
