@@ -14,7 +14,7 @@ describe TaskPrinterService do
 
   context 'given a single 1-dimentional task to print' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_1]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_1]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -26,7 +26,7 @@ describe TaskPrinterService do
 
   context 'given multiple 1-dimentional tasks to print' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_1_DOUBLE]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_1_DOUBLE]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -38,7 +38,7 @@ describe TaskPrinterService do
 
   context 'given a 2-dimentional task to print' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_2]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_2]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -50,7 +50,7 @@ describe TaskPrinterService do
 
   context 'given a 3-dimentional task to print' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_3]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_3]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -62,7 +62,7 @@ describe TaskPrinterService do
 
   context 'given a 3-dimentional task to print with leaf siblings on the bottom level' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_3_SIBLINGS_LEAF]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_3_SIBLINGS_LEAF]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -74,7 +74,7 @@ describe TaskPrinterService do
 
   context 'given a 3-dimentional task to print with internal siblings on the middle level' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_3_SIBLINGS_INTERNAL]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_3_SIBLINGS_INTERNAL]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -86,7 +86,7 @@ describe TaskPrinterService do
 
   context 'given a 2-dimentional task to print with mixed leaf and internal siblings' do
     it 'formats the task appropriately' do
-      task_name = TestConstants::KEYS[:DIMENTIONAL_2_MIXED]
+      task_name = TestConstants::KEYS[:DIMENSIONAL_2_MIXED]
       task = @config_templates[task_name]
 
       task_printed = @printer.print(task)
@@ -192,7 +192,7 @@ describe TaskPrinterService do
   describe '#leaf' do
     context 'given a leaf node' do
       it 'returns true' do
-        node_name = TestConstants::KEYS[:DIMENTIONAL_1]
+        node_name = TestConstants::KEYS[:DIMENSIONAL_1]
         node = @config_templates[node_name]
 
         output = @printer.leaf?(node)
@@ -203,7 +203,7 @@ describe TaskPrinterService do
 
     context 'given an internal node' do
       it 'returns false' do
-        node_name = TestConstants::KEYS[:DIMENTIONAL_3]
+        node_name = TestConstants::KEYS[:DIMENSIONAL_3]
         node = @config_templates[node_name]
 
         output = @printer.leaf?(node)

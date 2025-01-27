@@ -26,7 +26,7 @@ describe ConfigReaderService do
     context 'given an internal node to read' do
       it 'returns a hash' do
         tasks = @config[ConfigConstants::KEYS[:TASK_TEMPLATES]]
-        node_name = TestConstants::KEYS[:DIMENTIONAL_2]
+        node_name = TestConstants::KEYS[:DIMENSIONAL_2]
 
         node = tasks[node_name]
 
@@ -37,7 +37,7 @@ describe ConfigReaderService do
     context 'given a leaf node to read' do
       it 'returns an array' do
         tasks = @config[ConfigConstants::KEYS[:TASK_TEMPLATES]]
-        node_name = TestConstants::KEYS[:DIMENTIONAL_1]
+        node_name = TestConstants::KEYS[:DIMENSIONAL_1]
 
         node = tasks[node_name]
 

@@ -11,13 +11,13 @@ module TestConstants
   }.freeze
 
   KEYS = {
-    DIMENTIONAL_1: '1_Dimentional',
-    DIMENTIONAL_2: '2_Dimentional',
-    DIMENTIONAL_3: '3_Dimentional',
-    DIMENTIONAL_1_DOUBLE: '1_Dimentional_Double',
-    DIMENTIONAL_2_MIXED: '2_Dimentional_Mixed',
-    DIMENTIONAL_3_SIBLINGS_LEAF: '3_Dimentional_Leaf_Siblings',
-    DIMENTIONAL_3_SIBLINGS_INTERNAL: '3_Dimentional_Internal_Siblings',
+    DIMENSIONAL_1: '1_Dimensional',
+    DIMENSIONAL_2: '2_Dimensional',
+    DIMENSIONAL_3: '3_Dimensional',
+    DIMENSIONAL_1_DOUBLE: '1_Dimensional_Double',
+    DIMENSIONAL_2_MIXED: '2_Dimensional_Mixed',
+    DIMENSIONAL_3_SIBLINGS_LEAF: '3_Dimensional_Leaf_Siblings',
+    DIMENSIONAL_3_SIBLINGS_INTERNAL: '3_Dimensional_Internal_Siblings',
     BIRTHDAY_PERSON: 'Birthday_Person',
   }.freeze
 

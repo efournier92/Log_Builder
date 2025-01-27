@@ -32,29 +32,29 @@ lg_templates_config:
     - ""
     - "#### Today"
 task_templates_config:
-  1_Dimentional:
+  1_Dimensional:
     - Level_1
-  1_Dimentional_Double:
+  1_Dimensional_Double:
     - Level_1a
     - Level_1b
-  2_Dimentional:
+  2_Dimensional:
     Level_1:
       - Level_2
-  2_Dimentional_Mixed:
+  2_Dimensional_Mixed:
     Level_1a:
       Level_2a:
         - Level_3a
       Level_2b:
-  3_Dimentional:
+  3_Dimensional:
     Level_1:
       Level_2:
         - Level_3
-  3_Dimentional_Leaf_Siblings:
+  3_Dimensional_Leaf_Siblings:
     Level_1:
       Level_2:
         - Level_3
         - Level_3
-  3_Dimentional_Internal_Siblings:
+  3_Dimensional_Internal_Siblings:
     Level_1:
       Level_2a:
         - Level_3
@@ -207,28 +207,28 @@ tasks_config:
   Monday:
     method: to_each_xday
     day_name: Monday
-    template: 1_Dimentional
+    template: 1_Dimensional
   Tuesday_1:
     method: to_each_xday
     day_name: Tuesday
-    template: 1_Dimentional
+    template: 1_Dimensional
   Tuesday_2:
     method: to_each_xday
     day_name: Tuesday
-    template: 1_Dimentional
+    template: 1_Dimensional
   Wednesday:
     method: to_each_xday
     day_name: Wednesday
-    template: 3_Dimentional
+    template: 3_Dimensional
   Thursday_1:
     method: to_each_xday
     day_name: Thursday
-    template: 1_Dimentional
+    template: 1_Dimensional
   Thursday_2:
     method: to_each_xday
     day_name: Thursday
-    template: 3_Dimentional
+    template: 3_Dimensional
   Friday:
     method: to_each_xday
     day_name: Friday
-    template: 3_Dimentional
+    template: 3_Dimensional
