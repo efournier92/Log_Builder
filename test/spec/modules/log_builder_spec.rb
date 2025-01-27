@@ -4,10 +4,6 @@ require './src/constants/app_constants'
 require './test/constants/test_constants'
 
 describe LogBuilder do
-  # after :all do
-  #   `rm -f #{@output_dir}`
-  # end
-
   describe '#prompt_for_mode_input' do
     context 'given the user supplies a valid mode' do
       let(:input) { StringIO.new(AppConstants::MODES[:DO]) }
