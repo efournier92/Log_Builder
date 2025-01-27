@@ -45,5 +45,6 @@ module ConfigConstants
   ERRORS = {
     INVALID_DAY_NAME: 'Invalid day name: %s',
     INVALID_CONFIG: 'Invalid configuration: %s',
+    FILE_NOT_FOUND: 'File not found: %s'
   }.freeze
 end

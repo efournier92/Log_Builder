@@ -16,10 +16,10 @@ describe ConfigReaderService do
     end
 
     context 'given an nonexistent file to read' do
-      it 'throws an error' do
+      it 'raises a FileNotFoundError' do
         expect do
           @config_reader.read_file(TestConstants::CONFIG_FILES[:FAKE_PATH])
-        end.to raise_error
+        end.to raise_error(ConfigReaderService::FileNotFoundError, format(ConfigConstants::ERRORS[:FILE_NOT_FOUND], TestConstants::CONFIG_FILES[:FAKE_PATH]))
       end
     end
 

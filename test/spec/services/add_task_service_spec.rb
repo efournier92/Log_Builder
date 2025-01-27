@@ -694,8 +694,8 @@ describe AddTaskService do
       }
 
       expect { @service.to_xday_every_n_weeks(@do_year, config) }.to raise_error(
-         format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-       )
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+      )
     end
   end
 
