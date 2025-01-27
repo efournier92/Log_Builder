@@ -4,6 +4,10 @@ require './src/constants/app_constants'
 require './test/constants/test_constants'
 
 describe LogBuilder do
+  # after :all do
+  #   `rm -f #{@output_dir}`
+  # end
+
   describe '#prompt_for_mode_input' do
     context 'given the user supplies a valid mode' do
       let(:input) { StringIO.new(AppConstants::MODES[:DO]) }
@@ -237,7 +241,7 @@ describe LogBuilder do
     end
   end
 
-  context 'given build_file is executed with a month' do
+  context 'given proper inputs' do
     before :all do
       @output_dir = TestConstants::OUTPUT[:DIRECTORY]
     end
@@ -246,22 +250,24 @@ describe LogBuilder do
       `rm -rf #{@output_dir}`
     end
 
-    it 'prints january 1st' do
-      builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, 1, @output_dir)
-      output = builder.build_file
-      january_1st = output.find { |day| day.year == 2020 && day.month == 1 && day.month_day == 1 }
+    context 'given build_file is executed with a month' do
+      it 'prints january 1st' do
+        builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, 1, @output_dir)
+        output = builder.build_file
+        january_1st = output.find { |day| day.year == 2020 && day.month == 1 && day.month_day == 1 }
 
-      expect(january_1st).to_not be_nil
+        expect(january_1st).to_not be_nil
+      end
     end
-  end
 
-  context 'given build_file is executed without a month' do
-    it 'prints january 1st' do
-      builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, 1, @output_dir)
-      output = builder.build_file
-      january_1st = output.find { |day| day.year == 2020 && day.month == 1 && day.month_day == 1 }
+    context 'given build_file is executed without a month' do
+      it 'prints january 1st' do
+        builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, 1, @output_dir)
+        output = builder.build_file
+        january_1st = output.find { |day| day.year == 2020 && day.month == 1 && day.month_day == 1 }
 
-      expect(january_1st).to_not be_nil
+        expect(january_1st).to_not be_nil
+      end
     end
   end
 end
