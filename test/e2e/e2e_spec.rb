@@ -157,7 +157,7 @@ context 'User sketches a full-year LG file' do
 
     context 'when testing whitespace inclusion' do
       it 'includes expected whitespace breaks for weekdays' do
-        expect(@do_hash['## 2020-01-02 | Thursday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Yesterday\n\n#### Today")
+        expect(@do_hash['## 2020-01-02 | Thursday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today")
       end
 
       it 'includes expected whitespace breaks for weekends' do
@@ -165,11 +165,11 @@ context 'User sketches a full-year LG file' do
       end
 
       it 'includes expected whitespace breaks for mondays' do
-        expect(@do_hash['## 2020-07-06 | Monday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+        expect(@do_hash['## 2020-07-06 | Monday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Last Friday\n\n#### Today")
       end
 
       it 'includes expected whitespace breaks for fridays' do
-        expect(@do_hash['## 2020-07-03 | Friday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Yesterday\n\n#### Today\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+        expect(@do_hash['## 2020-07-03 | Friday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today\n\n### Notes\n\n#### Last Friday\n\n#### Today")
       end
     end
 

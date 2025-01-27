@@ -1,10 +1,10 @@
 lg_templates_config:
   base:
+    - ""
     - "### Do"
     - ""
     - "```text"
     - "```"
-    - ""
     - ""
   weekday:
     - "### Notes"
@@ -19,6 +19,7 @@ lg_templates_config:
     - "#### Last Friday"
     - ""
     - "#### Today"
+    - ""
   friday:
     - "### Notes"
     - ""
@@ -31,6 +32,7 @@ lg_templates_config:
     - "#### Last Friday"
     - ""
     - "#### Today"
+    - ""
 task_templates_config:
   1_Dimensional:
     - Level_1
