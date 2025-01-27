@@ -17,6 +17,33 @@ describe AddTaskService do
     @do_year = Year.new(@year, TestConstants::CONFIG_FILES[:BLANK_PATH])
   end
 
+  describe '#to_each_day' do
+    it 'raises an error for an invalid day name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_day(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+      )
+    end
+
+    it 'adds a configured tag to every day' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_day(@do_year, config)
+
+      do_year.days.each do |day|
+        expect(day.tasks).to include(tag)
+      end
+    end
+  end
+
   describe '#to_specific_date' do
     it 'adds a configured tag to January 1st' do
       month = 1
@@ -72,6 +99,32 @@ describe AddTaskService do
       day = get_day_from_year(do_year, @year, month, month_day)
 
       expect(day.tasks).to include(tag)
+    end
+
+    it 'raises an error for an invalid day name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:NTH_DAY] => 1,
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_nth_xday_in_month(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+      )
+    end
+  end
+
+  describe '#to_each_xday' do
+    it 'raises an error for an invalid day name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_xday(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+      )
     end
   end
 
@@ -553,6 +606,16 @@ describe AddTaskService do
         expect(day.tasks).to_not include(tag)
       end
     end
+
+    it 'raises an error if NTH_DAY is not provided' do
+      config = {
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_nth_day_in_each_month(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'NTH_DAY is required')
+      )
+    end
   end
 
   describe '#to_xday_every_n_weeks' do
@@ -622,6 +685,18 @@ describe AddTaskService do
       day = get_day_from_year(do_year, @year, month, month_day)
       expect(day.tasks).to include(tag)
     end
+
+    it 'raises an error for an invalid day name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:N_WEEKS] => 2,
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_xday_every_n_weeks(@do_year, config) }.to raise_error(
+         format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+       )
+    end
   end
 
   describe '#to_easter' do
@@ -678,6 +753,16 @@ describe AddTaskService do
         day = get_day_from_year(do_year, @year, month, month_day)
         expect(day.tasks).to_not include(tag)
       end
+    end
+
+    it 'raises an error if NTH_DAY is not provided' do
+      config = {
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_nth_day_in_each_quarter(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'NTH_DAY is required')
+      )
     end
   end
 end

@@ -18,7 +18,10 @@ class AddTaskService
   end
 
   def to_each_day(do_year, config)
-    # TODO: Throw config error if invalid day name
+    valid_day_names = Year::DAY_NAMES
+    day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+
     new_tag = config[ConfigConstants::KEYS[:TAG]]
 
     do_year.days.each do |day|
@@ -28,8 +31,10 @@ class AddTaskService
   end
 
   def to_each_xday(do_year, config)
-    # TODO: Throw config error if invalid day name
+    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+
     new_tag = config[ConfigConstants::KEYS[:TAG]]
 
     do_year.days.each do |day|
@@ -39,15 +44,16 @@ class AddTaskService
   end
 
   def to_nth_xday_in_month(do_year, config)
+    valid_day_names = Year::DAY_NAMES
+    day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+
     month = config[ConfigConstants::KEYS[:MONTH]]
     nth_day = config[ConfigConstants::KEYS[:NTH_DAY]]
-    # TODO: Throw config error if invalid day name
-    day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
     new_tag = config[ConfigConstants::KEYS[:TAG]]
     is_each = config[ConfigConstants::KEYS[:IS_EACH?]]
 
     day_count = 0
-
     last_month = 0
     do_year.days.each do |day|
       if last_month != day.month
@@ -108,28 +114,34 @@ class AddTaskService
   end
 
   def to_nth_day_in_each_month(do_year, config)
-    # TODO: Throw config error if invalid
+    nth_day = config[ConfigConstants::KEYS[:NTH_DAY]]
+    raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'NTH_DAY is required') unless nth_day
+
     config[ConfigConstants::KEYS[:IS_EACH?]] = true
-    config[ConfigConstants::KEYS[:DAY]] = config[ConfigConstants::KEYS[:NTH_DAY]]
+    config[ConfigConstants::KEYS[:DAY]] = nth_day
 
     to_specific_date(do_year, config)
   end
 
   def to_nth_day_in_each_quarter(do_year, config)
-    # TODO: Throw config error if invalid
+    nth_day = config[ConfigConstants::KEYS[:NTH_DAY]]
+    raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'NTH_DAY is required') unless nth_day
+
     quarter_months = AppConstants::LISTS[:QUARTER_MONTHS]
 
     quarter_months.each do |month|
       config[ConfigConstants::KEYS[:MONTH]] = month
-      config[ConfigConstants::KEYS[:DAY]] = config[ConfigConstants::KEYS[:NTH_DAY]]
+      config[ConfigConstants::KEYS[:DAY]] = nth_day
       to_specific_date(do_year, config)
     end
     do_year
   end
 
   def to_xday_every_n_weeks(do_year, config)
-    # TODO: Throw config error if invalid day name
+    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+
     n_weeks = config[ConfigConstants::KEYS[:N_WEEKS]]
     new_tag = config[ConfigConstants::KEYS[:TAG]]
 

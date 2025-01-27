@@ -41,4 +41,9 @@ module ConfigConstants
     DO: 'DO',
     LG: 'LG'
   }.freeze
+
+  ERRORS = {
+    INVALID_DAY_NAME: 'Invalid day name: %s',
+    INVALID_CONFIG: 'Invalid configuration: %s',
+  }.freeze
 end
