@@ -18,9 +18,8 @@ class AddTaskService
   end
 
   def to_each_day(do_year, config)
-    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
 
     new_tag = config[ConfigConstants::KEYS[:TAG]]
 
@@ -31,9 +30,8 @@ class AddTaskService
   end
 
   def to_each_xday(do_year, config)
-    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
 
     new_tag = config[ConfigConstants::KEYS[:TAG]]
 
@@ -44,9 +42,8 @@ class AddTaskService
   end
 
   def to_nth_xday_in_month(do_year, config)
-    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
 
     month = config[ConfigConstants::KEYS[:MONTH]]
     nth_day = config[ConfigConstants::KEYS[:NTH_DAY]]
@@ -138,9 +135,8 @@ class AddTaskService
   end
 
   def to_xday_every_n_weeks(do_year, config)
-    valid_day_names = Year::DAY_NAMES
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless valid_day_names.include?(day_name)
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
 
     n_weeks = config[ConfigConstants::KEYS[:N_WEEKS]]
     new_tag = config[ConfigConstants::KEYS[:TAG]]

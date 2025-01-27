@@ -10,6 +10,10 @@ class Year
   WEEKDAY_DAY_NAMES = %w[Monday Tuesday Wednesday Thursday Friday].freeze
   DAY_NAMES = WEEKDAY_DAY_NAMES + WEEKEND_DAY_NAMES
 
+  def self.valid_day_name?(day_name)
+    DAY_NAMES.include?(day_name)
+  end
+
   def initialize(year_number, config_file)
     @year_number = year_number
     @year_counter = year_number
