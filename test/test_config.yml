@@ -1,12 +1,36 @@
 lg_templates_config:
   base:
-    - "\n### Do\n\n```text\n```\n\n"
+    - "### Do"
+    - ""
+    - "```text"
+    - "```"
+    - ""
+    - ""
   weekday:
-    - "### Notes\n\n#### Yesterday\n\n#### Today\n\n"
+    - "### Notes"
+    - ""
+    - "#### Yesterday"
+    - ""
+    - "#### Today"
+    - ""
   monday:
-    - "### Notes\n\n#### Last Friday\n\n#### Today\n\n"
+    - "### Notes"
+    - ""
+    - "#### Last Friday"
+    - ""
+    - "#### Today"
   friday:
-    - "### Notes\n\n#### Yesterday\n\n#### Today\n\n### Scrum\n\n#### Last Friday\n\n#### Today\n\n"
+    - "### Notes"
+    - ""
+    - "#### Yesterday"
+    - ""
+    - "#### Today"
+    - ""
+    - "### Notes"
+    - ""
+    - "#### Last Friday"
+    - ""
+    - "#### Today"
 task_templates_config:
   1_Dimentional:
     - Level_1

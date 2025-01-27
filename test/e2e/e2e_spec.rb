@@ -141,7 +141,7 @@ context 'User sketches a full-year LG file' do
 
     create_log_file(TestConstants::CONFIG_FILES[:TEST_PATH], 'LG', output_year, 'ALL', @output_dir)
 
-    file_contents = IO.read(@output_file_path)
+    file_contents = IO.read(output_file_name)
 
     file_parser = FileParser.new
     @do_hash = file_parser.get_date_hash_from_lg_file(file_contents)
@@ -154,6 +154,24 @@ context 'User sketches a full-year LG file' do
   context 'when creating a LG file' do
     it 'creates the file' do
       expect(@output_file_path).to exist
+    end
+
+    context 'when testing whitespace inclusion' do
+      it 'includes expected whitespace breaks for weekdays' do
+        expect(@do_hash['## 2020-01-02 | Thursday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Yesterday\n\n#### Today")
+      end
+
+      it 'includes expected whitespace breaks for weekends' do
+        expect(@do_hash['## 2020-01-04 | Saturday']).to eq("### Do\n\n```text\n```")
+      end
+
+      it 'includes expected whitespace breaks for mondays' do
+        expect(@do_hash['## 2020-07-06 | Monday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+      end
+
+      it 'includes expected whitespace breaks for fridays' do
+        expect(@do_hash['## 2020-07-03 | Friday']).to eq("### Do\n\n```text\n```\n\n\n### Notes\n\n#### Yesterday\n\n#### Today\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+      end
     end
 
     it 'adds expected dates to the log file' do
