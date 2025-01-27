@@ -68,30 +68,29 @@ class PrinterService
     end
   end
 
-  def print_lg(do_year)
+  def get_template_by_day(day_name)
     reader_service = ConfigReaderService.new(@config_file)
+    template_base = reader_service.configured_lg_templates['base']
+    day_config = reader_service.configured_lg_templates[day_name.downcase]
+
+    return template_base + day_config unless day_config.nil?
+
+    if Year::WEEKEND_DAY_NAMES.include?(day_name)
+      template_base + reader_service.configured_lg_templates['weekend']
+    else
+      template_base + reader_service.configured_lg_templates['weekday']
+    end
+  end
+
+  def print_lg(do_year)
     make_out_dir
     year = do_year.year_number
     out_file = File.new(lg_file_name(year), 'w')
 
-    template_base = reader_service.configured_lg_templates['base']
-    template_weekend = template_base
-    template_weekday = template_base + reader_service.configured_lg_templates['weekday']
-    template_monday = template_base + reader_service.configured_lg_templates['monday']
-    template_friday = template_base + reader_service.configured_lg_templates['friday']
-
     do_year.days.each do |day|
       out_file.puts(date_line(day))
-      case day.name
-      when 'Saturday', 'Sunday'
-        out_file.puts(template_weekend)
-      when 'Monday'
-        out_file.puts(template_monday)
-      when 'Friday'
-        out_file.puts(template_friday)
-      else
-        out_file.puts(template_weekday)
-      end
+      day_template = get_template_by_day(day.name)
+      out_file.puts(day_template)
     end
   end
 end

@@ -1,11 +1,14 @@
 require_relative './day'
 require_relative '../services/configured_tasks_service'
+require 'pry-byebug'
 
 class Year
   attr_accessor :days
   attr_reader :year_number, :days_in_months, :config_file
 
-  DAY_NAMES = %w[Monday Tuesday Wednesday Thursday Friday Saturday Sunday].freeze
+  WEEKEND_DAY_NAMES = %w[Saturday Sunday].freeze
+  WEEKDAY_DAY_NAMES = %w[Monday Tuesday Wednesday Thursday Friday].freeze
+  DAY_NAMES = WEEKDAY_DAY_NAMES + WEEKEND_DAY_NAMES
 
   def initialize(year_number, config_file)
     @year_number = year_number

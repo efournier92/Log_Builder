@@ -195,7 +195,7 @@ context 'User sketches a full-year LG file' do
       expect(@do_hash[date]).to_not include('#### Today')
     end
 
-    it 'populates mondays with the monday template' do
+    it 'overrides the weekday template with the configured monday template' do
       date = '## 2020-07-06 | Monday'
       expect(@do_hash[date]).to include('### Do')
       expect(@do_hash[date]).to include('### Notes')

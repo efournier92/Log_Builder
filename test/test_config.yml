@@ -6,6 +6,8 @@ lg_templates_config:
     - "```text"
     - "```"
     - ""
+  weekend:
+    - ""
   weekday:
     - "### Notes"
     - ""
