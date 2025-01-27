@@ -18,6 +18,10 @@ class ConfigReaderService
     configured_task_templates[name]
   end
 
+  def configured_lg_templates
+    @config[ConfigConstants::KEYS[:LG_TEMPLATES]]
+  end
+
   def configured_tasks
     @config[ConfigConstants::KEYS[:TASKS]].to_a.reverse.to_h
   end

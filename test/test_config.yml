@@ -1,6 +1,12 @@
 lg_templates_config:
-  weekdays:
-    - "TEST"
+  base:
+    - "\n### Do\n\n```text\n```\n\n"
+  weekday:
+    - "### Notes\n\n#### Yesterday\n\n#### Today\n\n"
+  monday:
+    - "### Notes\n\n#### Last Friday\n\n#### Today\n\n"
+  friday:
+    - "### Notes\n\n#### Yesterday\n\n#### Today\n\n### Scrum\n\n#### Last Friday\n\n#### Today\n\n"
 task_templates_config:
   1_Dimentional:
     - Level_1

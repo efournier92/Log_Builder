@@ -2,6 +2,7 @@ module ConfigConstants
   KEYS = {
     TASKS: 'tasks_config',
     TASK_TEMPLATES: 'task_templates_config',
+    LG_TEMPLATES: 'lg_templates_config',
     TEMPLATE: 'template',
     TEMPLATE_VARIABLES: 'template_variables',
     SPECIFIC_DATE: 'specific_date',

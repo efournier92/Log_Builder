@@ -1,11 +1,13 @@
 require './src/services/file_parser_service'
 require './test/constants/test_constants'
+require 'pathname'
+require 'pry-byebug'
 
 def create_log_file(config_file, print_type, print_year, print_month, output_dir)
   `ruby ./src/run.rb '#{config_file}' '#{print_type}' '#{print_year}' '#{print_month}' '#{output_dir}'`
 end
 
-context 'User sketches a full-year log file' do
+context 'User sketches a full-year DO file' do
   before :all do
     @output_dir = TestConstants::OUTPUT[:DIRECTORY]
     output_year = 2020
@@ -127,5 +129,62 @@ context 'User sketches a full-year log file' do
     #   expected = "Birthday(\n  Name(\n    Person(\n      Name(UncleSam,),\n    ),\n  ),\n  Contact(\n    Contact(000-000-0000,),\n  ),\n),"
     #   expect(@do_hash[date]).to include(expected)
     # end
+  end
+end
+
+context 'User sketches a full-year LG file' do
+  before :all do
+    @output_dir = TestConstants::OUTPUT[:DIRECTORY]
+    output_year = 2020
+    output_file_name = "#{@output_dir}/LG_#{output_year}.md"
+    @output_file_path = Pathname.new(output_file_name)
+
+    create_log_file(TestConstants::CONFIG_FILES[:TEST_PATH], 'LG', output_year, 'ALL', @output_dir)
+
+    file_contents = IO.read(@output_file_path)
+
+    file_parser = FileParser.new
+    @do_hash = file_parser.get_date_hash_from_lg_file(file_contents)
+  end
+
+  after :all do
+    `rm -rf #{@output_dir}`
+  end
+
+  context 'when creating a LG file' do
+    it 'creates the file' do
+      expect(@output_file_path).to exist
+    end
+
+    it 'adds expected dates to the log file' do
+      expect(@do_hash['## 2020-01-01 | Wednesday']).to_not be(nil)
+      expect(@do_hash['## 2020-07-04 | Saturday']).to_not be(nil)
+      expect(@do_hash['## 2020-12-31 | Thursday']).to_not be(nil)
+    end
+
+    it 'populates weekdays with the weekday template' do
+      date = '## 2020-01-01 | Wednesday'
+      expect(@do_hash[date]).to include('### Do')
+      expect(@do_hash[date]).to include('### Notes')
+      expect(@do_hash[date]).to include('#### Yesterday')
+      expect(@do_hash[date]).to include('#### Today')
+    end
+
+    it 'populates weekends with the weekend template' do
+      date = '## 2020-07-04 | Saturday'
+      expect(@do_hash[date]).to include('### Do')
+      expect(@do_hash[date]).to_not include('### Notes')
+      expect(@do_hash[date]).to_not include('#### Yesterday')
+      expect(@do_hash[date]).to_not include('#### Today')
+    end
+
+    it 'populates mondays with the monday template' do
+      date = '## 2020-07-06 | Monday'
+      expect(@do_hash[date]).to include('### Do')
+      expect(@do_hash[date]).to include('### Notes')
+      expect(@do_hash[date]).to_not include('#### Yesterday')
+      expect(@do_hash[date]).to include('#### Last Friday')
+      expect(@do_hash[date]).to include('#### Today')
+    end
   end
 end

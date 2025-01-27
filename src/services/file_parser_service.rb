@@ -37,4 +37,26 @@ class FileParser
 
     output
   end
+
+  def get_date_hash_from_lg_file(file_contents)
+    output = {}
+
+    while (next_date_line = file_contents.index("\n## "))
+      next_new_line = file_contents.index("\n", next_date_line + 1)
+      break if next_new_line.nil?
+
+      date_line = file_contents[next_date_line...next_new_line]
+      key = date_line.strip
+
+      next_section_start = file_contents.index("\n## ", next_new_line + 1)
+      section_end = next_section_start || file_contents.length
+      section_content = file_contents[next_new_line...section_end]
+
+      output[key] = section_content.strip
+
+      file_contents = file_contents[section_end..]
+    end
+
+    output
+  end
 end

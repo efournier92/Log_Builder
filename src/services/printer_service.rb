@@ -3,7 +3,8 @@ require 'fileutils'
 class PrinterService
   DEFAULT_OUTPUT_DIR = './'.freeze
 
-  def initialize(output_dir = DEFAULT_OUTPUT_DIR)
+  def initialize(config_file, output_dir = DEFAULT_OUTPUT_DIR)
+    @config_file = config_file
     @output_dir = output_dir || DEFAULT_OUTPUT_DIR
   end
 
@@ -68,25 +69,28 @@ class PrinterService
   end
 
   def print_lg(do_year)
+    reader_service = ConfigReaderService.new(@config_file)
     make_out_dir
     year = do_year.year_number
     out_file = File.new(lg_file_name(year), 'w')
 
-    template_base = do_block_opener
-    # TODO: Move to template
-    template_weekday = "#{template_base}### Scrum\n\n#### Yesterday\n\n#### Today\n\n#### Parking Lot\n\n"
-    template_monday  = "#{template_base}### Scrum\n\n#### Last Friday\n\n#### Today\n\n#### Parking Lot\n\n"
+    template_base = reader_service.configured_lg_templates['base']
+    template_weekend = template_base
+    template_weekday = template_base + reader_service.configured_lg_templates['weekday']
+    template_monday = template_base + reader_service.configured_lg_templates['monday']
+    template_friday = template_base + reader_service.configured_lg_templates['friday']
 
-    do_year.weeks.each do |week|
-      week.days.each do |day|
-        out_file.puts(date_line(day))
-        if day.name == 'Saturday' || day.name == 'Sunday'
-          out_file.puts(template_base)
-        elsif day.name == 'Monday'
-          out_file.puts(template_monday)
-        else
-          out_file.puts(template_weekday)
-        end
+    do_year.days.each do |day|
+      out_file.puts(date_line(day))
+      case day.name
+      when 'Saturday', 'Sunday'
+        out_file.puts(template_weekend)
+      when 'Monday'
+        out_file.puts(template_monday)
+      when 'Friday'
+        out_file.puts(template_friday)
+      else
+        out_file.puts(template_weekday)
       end
     end
   end

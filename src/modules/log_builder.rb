@@ -30,7 +30,7 @@ class LogBuilder
   end
 
   def build_by_mode
-    printer_service = PrinterService.new(@output_directory)
+    printer_service = PrinterService.new(@config_file, @output_directory)
     do_year = Year.new(@year_number, @config_file)
 
     if @mode == AppConstants::MODES[:DO]
