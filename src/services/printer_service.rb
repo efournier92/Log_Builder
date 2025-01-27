@@ -70,15 +70,15 @@ class PrinterService
 
   def get_template_by_day(day_name)
     reader_service = ConfigReaderService.new(@config_file)
-    template_base = reader_service.configured_lg_templates['base']
+    template_base = reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_BASE]]
     day_config = reader_service.configured_lg_templates[day_name.downcase]
 
     return template_base + day_config unless day_config.nil?
 
     if Year::WEEKEND_DAY_NAMES.include?(day_name)
-      template_base + reader_service.configured_lg_templates['weekend']
+      template_base + reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKEND]]
     else
-      template_base + reader_service.configured_lg_templates['weekday']
+      template_base + reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKDAY]]
     end
   end
 
