@@ -1,5 +1,6 @@
 require './src/services/configured_tasks_service'
 require './src/models/year'
+require './src/constants/config_constants'
 require './test/constants/test_constants'
 
 describe ConfiguredTasksService do
@@ -78,6 +79,36 @@ describe ConfiguredTasksService do
 
         expected_tag = "Level_1(\n  Level_2a(\n    Placeholder_a,\n  ),\n  Level_2b(\n    Placeholder_b,\n  ),\n),"
         expect(day.tasks).to include(expected_tag)
+      end
+
+      it 'returns early when there are no configured tasks' do
+        reader = double('ConfigReaderService', configured_tasks: nil)
+        allow(ConfigReaderService).to receive(:new).and_return(reader)
+
+        expect(@tag_service.add_configured_tasks(@year)).to be_nil
+      end
+
+      it 'adds a tag for a method that runs every n weeks' do
+        task_config = {
+          ConfigConstants::KEYS[:METHOD] => 'to_xday_every_n_weeks',
+          ConfigConstants::KEYS[:TEMPLATE] => ConfigConstants::TEMPLATE_TYPES[:HOLIDAY],
+          ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+          ConfigConstants::KEYS[:N_WEEKS] => 2,
+          ConfigConstants::KEYS[:TEMPLATE_VARIABLES] => [{ '{{CONTENT}}' => 'Every_2_Weeks' }],
+        }
+        reader = double('ConfigReaderService')
+        allow(reader).to receive(:configured_tasks).and_return('Every_2_Weeks' => task_config)
+        allow(reader).to receive(:configured_task_templates).and_return(
+          ConfigConstants::TEMPLATE_TYPES[:HOLIDAY] => {
+            ConfigConstants::TEMPLATE_TYPES[:HOLIDAY] => ['{{CONTENT}}'],
+          }
+        )
+        allow(ConfigReaderService).to receive(:new).and_return(reader)
+
+        @tag_service.add_configured_tasks(@year)
+
+        day = @year.days.find { |d| d.month == 1 && d.month_day == 13 }
+        expect(day.tasks).to include("Holiday(\n  Every_2_Weeks,\n),\n")
       end
     end
   end

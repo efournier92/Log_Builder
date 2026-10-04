@@ -13,7 +13,6 @@ class PrinterService
   end
 
   def print_tasks(out_file, day)
-    make_out_dir
     out_file.puts(date_line(day).to_s)
     out_file.puts
     out_file.puts(markdown_block_opener)
@@ -28,14 +27,6 @@ class PrinterService
 
   def markdown_block_opener
     "```text\n"
-  end
-
-  def markdown_block_closer
-    '```'
-  end
-
-  def do_block_opener
-    "\n### Do\n\n```text\n```\n\n"
   end
 
   def do_file_name(year, month = nil)
@@ -53,44 +44,46 @@ class PrinterService
   def print_do_year(do_year)
     make_out_dir
     year = do_year.year_number
-    out_file = File.new(do_file_name(year), 'w')
-    do_year.days.each do |day|
-      print_tasks(out_file, day)
+    File.open(do_file_name(year), 'w') do |out_file|
+      do_year.days.each do |day|
+        print_tasks(out_file, day)
+      end
     end
   end
 
   def print_do_month(do_year, month)
     make_out_dir
     year = do_year.year_number
-    out_file = File.new(do_file_name(year, month), 'w')
-    do_year.days.each do |day|
-      print_tasks(out_file, day) if day.month == month
+    File.open(do_file_name(year, month), 'w') do |out_file|
+      do_year.days.each do |day|
+        print_tasks(out_file, day) if day.year == year && day.month == month
+      end
     end
   end
 
   def get_template_by_day(day_name)
-    reader_service = ConfigReaderService.new(@config_file)
-    template_base = reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_BASE]]
-    day_config = reader_service.configured_lg_templates[day_name.downcase]
+    @reader ||= ConfigReaderService.new(@config_file)
+    template_base = @reader.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_BASE]]
+    day_config = @reader.configured_lg_templates[day_name.downcase]
 
     return template_base + day_config unless day_config.nil?
 
     if Year::WEEKEND_DAY_NAMES.include?(day_name)
-      template_base + reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKEND]]
+      template_base + @reader.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKEND]]
     else
-      template_base + reader_service.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKDAY]]
+      template_base + @reader.configured_lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_WEEKDAY]]
     end
   end
 
   def print_lg(do_year)
     make_out_dir
     year = do_year.year_number
-    out_file = File.new(lg_file_name(year), 'w')
-
-    do_year.days.each do |day|
-      out_file.puts(date_line(day))
-      day_template = get_template_by_day(day.name)
-      out_file.puts(day_template)
+    File.open(lg_file_name(year), 'w') do |out_file|
+      do_year.days.each do |day|
+        out_file.puts(date_line(day))
+        day_template = get_template_by_day(day.name)
+        out_file.puts(day_template)
+      end
     end
   end
 end

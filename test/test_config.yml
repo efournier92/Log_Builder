@@ -155,7 +155,6 @@ tasks_config:
       - '{{CONTENT}}': Good_Friday
   Birthday_Person:
     method: to_specific_date
-    year: 1976
     month: 1
     day: 3
     template: Birthday

@@ -126,6 +126,22 @@ describe AddTaskService do
         format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
       )
     end
+
+    it 'adds a configured tag only to the matching days' do
+      tag = 'Monday_Tag'
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_xday(@do_year, config)
+
+      monday = get_day_from_year(do_year, @year, 1, 6)
+      tuesday = get_day_from_year(do_year, @year, 1, 7)
+
+      expect(monday.tasks).to include(tag)
+      expect(tuesday.tasks).to_not include(tag)
+    end
   end
 
   describe '#to_nth_xday_in_each_month' do
@@ -349,6 +365,18 @@ describe AddTaskService do
       day = get_day_from_year(do_year, @year, month, month_day)
       expect(day.tasks).to_not include(tag)
     end
+
+    it 'mutates the passed config by setting is_each' do
+      config = {
+        ConfigConstants::KEYS[:NTH_DAY] => 3,
+        ConfigConstants::KEYS[:DAY_NAME] => 'Wednesday',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      @service.to_nth_xday_in_each_month(@do_year, config)
+
+      expect(config[ConfigConstants::KEYS[:IS_EACH?]]).to be true
+    end
   end
 
   describe '#to_last_xday_in_month' do
@@ -367,6 +395,21 @@ describe AddTaskService do
       day = get_day_from_year(do_year, @year, month, month_day)
 
       expect(day.tasks).to include(tag)
+    end
+
+    it 'does not validate the day name unlike #to_nth_xday_in_month' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_last_xday_in_month(@do_year, config)
+
+      do_year.days.each do |day|
+        expect(day.tasks).to_not include(tag)
+      end
     end
   end
 
@@ -697,6 +740,25 @@ describe AddTaskService do
         format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
       )
     end
+
+    it 'resets the week counter when the days span a year boundary' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+        ConfigConstants::KEYS[:N_WEEKS] => 2,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_xday_every_n_weeks(@do_year, config)
+
+      first_monday = get_day_from_year(do_year, 2019, 12, 30)
+      boundary_monday = get_day_from_year(do_year, 2020, 1, 6)
+      next_monday = get_day_from_year(do_year, 2020, 1, 13)
+
+      expect(first_monday.tasks).to_not include(tag)
+      expect(boundary_monday.tasks).to_not include(tag)
+      expect(next_monday.tasks).to include(tag)
+    end
   end
 
   describe '#to_easter' do
@@ -728,6 +790,31 @@ describe AddTaskService do
       day = get_day_from_year(do_year, @year, month, month_day)
 
       expect(day.tasks).to include(tag)
+    end
+  end
+
+  describe '#get_good_friday_month' do
+    it 'returns the previous month when Easter falls on the 1st or 2nd' do
+      expect(@service.send(:get_good_friday_month, 2, 3)).to eq(2)
+      expect(@service.send(:get_good_friday_month, 1, 4)).to eq(3)
+    end
+
+    it 'returns the Easter month for a later Easter day' do
+      expect(@service.send(:get_good_friday_month, 3, 3)).to eq(3)
+    end
+  end
+
+  describe '#get_good_friday_day' do
+    it 'returns the last day of the month when Easter is on the 2nd' do
+      expect(@service.send(:get_good_friday_day, 31, 2)).to eq(31)
+    end
+
+    it 'returns one day before the last day when Easter is on the 1st' do
+      expect(@service.send(:get_good_friday_day, 31, 1)).to eq(30)
+    end
+
+    it 'returns two days before Easter otherwise' do
+      expect(@service.send(:get_good_friday_day, 31, 5)).to eq(3)
     end
   end
 

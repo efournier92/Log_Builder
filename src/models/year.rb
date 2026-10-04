@@ -1,6 +1,5 @@
 require_relative './day'
 require_relative '../services/configured_tasks_service'
-require 'pry-byebug'
 
 class Year
   attr_accessor :days

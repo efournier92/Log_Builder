@@ -125,7 +125,8 @@ context 'User sketches a full-year DO file' do
 
     # it 'adds a birthday' do
     #   date = '2020-07-04'
-    #   expected = "Birthday(\n  Name(\n    Person(\n      Name(UncleSam,),\n    ),\n  ),\n  Contact(\n    Contact(000-000-0000,),\n  ),\n),"
+    #   expected = "Birthday(\n  Name(\n    Person(\n      Name(UncleSam,),\n    ),\n  ),"
+    #   expected += "\n  Contact(\n    Contact(000-000-0000,),\n  ),\n),"
     #   expect(@do_hash[date]).to include(expected)
     # end
   end
@@ -157,7 +158,9 @@ context 'User sketches a full-year LG file' do
 
     context 'when testing whitespace inclusion' do
       it 'includes expected whitespace breaks for weekdays' do
-        expect(@do_hash['## 2020-01-02 | Thursday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today")
+        expect(@do_hash['## 2020-01-02 | Thursday']).to eq(
+          "### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today"
+        )
       end
 
       it 'includes expected whitespace breaks for weekends' do
@@ -165,11 +168,16 @@ context 'User sketches a full-year LG file' do
       end
 
       it 'includes expected whitespace breaks for mondays' do
-        expect(@do_hash['## 2020-07-06 | Monday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+        expect(@do_hash['## 2020-07-06 | Monday']).to eq(
+          "### Do\n\n```text\n```\n\n### Notes\n\n#### Last Friday\n\n#### Today"
+        )
       end
 
       it 'includes expected whitespace breaks for fridays' do
-        expect(@do_hash['## 2020-07-03 | Friday']).to eq("### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today\n\n### Notes\n\n#### Last Friday\n\n#### Today")
+        expect(@do_hash['## 2020-07-03 | Friday']).to eq(
+          "### Do\n\n```text\n```\n\n### Notes\n\n#### Yesterday\n\n#### Today\n\n" \
+          "### Notes\n\n#### Last Friday\n\n#### Today"
+        )
       end
     end
 

@@ -5,7 +5,7 @@ source 'https://rubygems.org'
 gem 'yaml'
 
 group :development do
-  gem 'pry-byebug'
+  # gem 'pry-byebug'
   gem 'rspec'
   gem 'rubocop'
   gem 'ruby-lsp'

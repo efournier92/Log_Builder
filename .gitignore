@@ -2,3 +2,6 @@
 tags
 Log_Builder.iml
 workspace.xml
+builds/
+.ruby-lsp/
+_out_test/

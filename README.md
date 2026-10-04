@@ -12,20 +12,20 @@
   - [Templates](#templates)
     - [Template Structure](#template-structure)
     - [Template Examples](#template-examples)
-  - [Tasks](#templates)
-    - [Task Structure](#template-structure)
+  - [Tasks](#tasks)
+    - [Task Structure](#task-structure)
     - [Supported Methods](#supported-methods)
-    - [Task Examples](#template-examples)
+    - [Task Examples](#examples)
     - [Holidays](#holidays)
     - [Birthdays](#birthdays)
-- [Version History]($version-history)
-- [TODO Items](todo-items)
+- [Version History](#version-history)
+- [TODO Items](#todo-items)
 
 ## Overview
 
 - **Facilitates capturing prospective and retrospective data from your day in a handy Markdown syntax.**
-- _Builds a daily prospective TODO-style list structure with tasks fed from a configuration file._
-- _Allows you to capture retrospective points of reference from each day of your life._
+- *Builds a daily prospective TODO-style list structure with tasks fed from a configuration file.*
+- *Allows you to capture retrospective points of reference from each day of your life.*
 
 ## Usage
 
@@ -44,18 +44,18 @@ Holiday(
 ),
 Birthday(
   Name(YourFriend,),
-  Contact(your_friend@gmail.com,),
+  Contact(your_friend@example.com,),
 ),
-Bills_Pay(
-  Rent(
-    Price(),
+Home_Admin(
+  Utility(
+    Amount(),
   ),
 ):
 Code_Project_Work(
   Readme_Finish,
   Git_Commit,
 ),
-Appointment_Attend(
+Event_Attend(
   @(
     Arrive(),
     Depart(),
@@ -74,13 +74,13 @@ Appointment_Attend(
     TODO,
   ),
 ),
-Music_Equipment(
-  Guitar_Restring(
+Hobby_Gear(
+  Gear_Maintenance(
     Because(
-      HasBeen_Months(3,),
+      Months_Since(3,),
     ),
     Strategy(
-      Type(Augustine_Black,),
+      Type(Brand_Name,),
     ),
     Result(
       TODO,
@@ -132,6 +132,48 @@ task_templates_config:
 
 #### Template Examples
 
+##### Lg
+
+```yaml
+lg_templates_config:
+  base:
+    - ""
+    - "### Do"
+    - ""
+    - "```text"
+    - "```"
+    - ""
+  weekday:
+    - "### Notes"
+    - ""
+    - "#### Yesterday"
+    - ""
+    - "#### Today"
+    - ""
+  monday:
+    - "### Notes"
+    - ""
+    - "#### Last Friday"
+    - ""
+    - "#### Today"
+    - ""
+  friday:
+    - "### Notes"
+    - ""
+    - "#### Yesterday"
+    - ""
+    - "#### Today"
+    - ""
+    - "### Review"
+    - ""
+    - "#### Last Friday"
+    - ""
+    - "#### Today"
+    - ""
+```
+
+##### Do
+
 ```yaml
 Holiday:
   Holiday:
@@ -144,8 +186,8 @@ Code_Daily:
   Code_Project_Work:
     - Readme_Finish
     - Git_Commit
-Appointment_Attend:
-  Appointment_Attend:
+Event_Attend:
+  Event_Attend:
     '@':
       Arrive(TODO,):
       Depart(TODO,):
@@ -233,7 +275,7 @@ Christmas:
 ##### `to_each_xday`
 
 ```yaml
-Friday_Code:
+Friday_Project:
   method: to_each_xday
   day_name: Friday
   template: Code_Daily
@@ -257,34 +299,34 @@ Presidents_Day:
 ###### Every Month
 
 ```yaml
-Appointment_Monthly_Attend:
+Event_Monthly_Attend:
   method: to_nth_xday_in_each_month
   nth_day: 3
   odd_only: true
   day_name: Saturday
-  template: Appointment_Attend
+  template: Event_Attend
 ```
 
 ###### Every Odd Month
 
 ```yaml
-Appointment_Monthly_Attend:
+Event_Monthly_Attend:
   method: to_nth_xday_in_each_month
   nth_day: 3
   odd_only: true
   day_name: Saturday
-  template: Appointment_Attend
+  template: Event_Attend
 ```
 
 ###### Every Even Month
 
 ```yaml
-Appointment_Monthly_Attend:
+Event_Monthly_Attend:
   method: to_nth_xday_in_each_month
   nth_day: 3
   even_only: true
   day_name: Saturday
-  template: Appointment_Attend
+  template: Event_Attend
 ```
 
 ##### `to_last_xday_in_month`
@@ -302,13 +344,13 @@ Memorial_Day:
 ##### `to_last_xday_in_each_month`
 
 ```yaml
-Bill_Rent_Pay:
+Bill_Pay:
   method: to_last_xday_in_each_month
   day_name: Friday
   template:
-    Bills_Pay:
-      Rent:
-        - Price(TODO,)
+    Home_Admin:
+      Utility:
+        - Amount(TODO,)
 ```
 
 ##### `to_last_day_in_month`
@@ -343,21 +385,21 @@ Log_LastMonth:
 ##### `to_nth_day_in_each_quarter`
 
 ```yaml
-Guitar_Restring:
+Gear_Maintenance:
   method: to_nth_day_in_each_quarter
   nth_day: 1
   template:
-    - Guitar_Restring
+    - Gear_Maintenance
 ```
 
 ##### `to_xday_every_n_weeks`
 
 ```yaml
-Appointment_Biweekly_Attend:
+Event_Biweekly_Attend:
   method: to_xday_every_n_weeks
   day_name: Friday
   n_weeks: 2
-  template: Appointment_Attend
+  template: Event_Attend
 ```
 
 ##### `to_easter`
@@ -463,7 +505,7 @@ tasks_config:
       - '{{NAME}}': Independence_Day
   Labor_Day:
     method: to_nth_xday_in_month
-    month: 1
+    month: 9
     nth_day: 2
     day_name: Tuesday
     template: Holiday
@@ -519,7 +561,7 @@ tasks_config:
     day: 31
     template: Holiday
     template_variables:
-      - '{{NAME}}': Christmas
+      - '{{NAME}}': NewYears_Eve
 ```
 
 ### Birthdays
@@ -547,16 +589,22 @@ Birthday_AbeLincoln:
 - Logical retooling to read tasks from a YAML config file.
 - 1st build compiled with Ruby Packer.
 
+### 2025-01-26
+
+- Implement config-drive LG mode.
+- Deprecate hard-coded LG strings from the codebase.
+
 ## TODO Items
 
+- [X] Address LG mode.
+  - [X] Config driven.
+  - [X] Add example to README.
 - [ ] Overwrite same-named tags for a day.
 - [ ] Warn of duplicate keys in YAML.
-- [ ] Add begin/rescue blacks to all YAML-related methods.
+- [ ] Add begin/rescue blocks to all YAML-related methods.
   - [ ] Warn user of improper configuration.
   - [ ] Do not stop running on improper configuration.
 - [ ] Validate inputs to `add_task_service`.
 - [ ] Ask user to open with VIM.
 - [ ] Calculate birthday age from year.
-- [ ] Address LG mode.
-  - [ ] Config driven.
-  - [ ] Add example to README.
+

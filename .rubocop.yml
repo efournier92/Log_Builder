@@ -1,3 +1,6 @@
+AllCops:
+  NewCops: disable
+
 Style/TrailingCommaInHashLiteral:
   Enabled: false
 Style/Documentation:

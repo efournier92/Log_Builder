@@ -352,5 +352,134 @@ describe TaskPrinterService do
         expect(output).to eql(expected_output)
       end
     end
+
+    context 'given a string without a {{ }} wrapper' do
+      it 'returns the input unchanged' do
+        input = 'NoWrapper'
+
+        output = @printer.get_placeholder(input)
+
+        expect(output).to eql('NoWrapper')
+      end
+    end
+  end
+
+  describe '#get_name_from_placeholder' do
+    context 'given a string without a {{ }} wrapper' do
+      it 'returns the input unchanged' do
+        input = 'NoWrapper'
+
+        output = @printer.get_name_from_placeholder(input)
+
+        expect(output).to eql('NoWrapper')
+      end
+    end
+  end
+
+  describe '#print_leaf' do
+    context 'given nil' do
+      it 'returns without changing output' do
+        @printer.print_leaf(nil)
+
+        expect(@printer.output).to eql('')
+      end
+    end
+  end
+
+  describe '#print_internal' do
+    context 'given nil' do
+      it 'returns without changing output' do
+        @printer.print_internal(nil)
+
+        expect(@printer.output).to eql('')
+      end
+    end
+
+    context 'given a placeholder that resolves to a configured composed template' do
+      it 'prints the composed template containing its {{TASK.*}} placeholders' do
+        node = { '{{Composed_Task}}' => nil }
+
+        @printer.print_internal(node)
+
+        expected_output = "Composed_Task(\n  {{TASK.Composed_Level_2a}},\n  {{TASK.Composed_Level_2b}},\n),"
+        expect(@printer.output).to eql(expected_output)
+      end
+    end
+
+    context 'given a placeholder that resolves to no configured template' do
+      it 'rescues and appends the placeholder as a leaf' do
+        node = { '{{Missing_Template}}' => nil }
+
+        expect { @printer.print_internal(node) }.to output(/TEXT: \{\{Missing_Template\}\}/).to_stdout
+
+        expect(@printer.output).to eql('{{Missing_Template}},')
+      end
+    end
+  end
+
+  describe '#append_internal' do
+    context 'given text for an internal node' do
+      it 'appends the text followed by an opening parenthesis' do
+        @printer.append_internal('Header')
+
+        expect(@printer.output).to eql('Header(')
+      end
+    end
+  end
+
+  describe '#print_closer' do
+    context 'given a call to #print_closer' do
+      it 'appends a newline, indentation, and a closing parenthesis' do
+        @printer.print_closer
+
+        expect(@printer.output).to eql("\n),")
+      end
+    end
+  end
+
+  describe '#append_spacing' do
+    context 'given the current depth is 0' do
+      it 'appends nothing' do
+        @printer.append_spacing
+
+        expect(@printer.output).to eql('')
+      end
+    end
+
+    context 'given the current depth is 1' do
+      it 'appends a newline followed by an indent' do
+        @printer.increment_depth
+
+        @printer.append_spacing
+
+        expect(@printer.output).to eql("\n  ")
+      end
+    end
+  end
+
+  describe '#update_content_array' do
+    context 'given a placeholder with no matching mapping' do
+      it 'leaves the placeholder unchanged' do
+        placeholders = ['{{MISSING}}']
+        template_variables = [{ '{{CONTENT}}' => 'Placeholder' }]
+
+        @printer.update_content_array(placeholders, template_variables)
+
+        expect(placeholders).to eql(['{{MISSING}}'])
+      end
+    end
+  end
+
+  describe '#update_content_hash' do
+    context 'given a nested array of placeholders' do
+      it 'replaces the placeholders recursively' do
+        template = { 'Level_1' => { 'Level_2a' => ['{{CONTENT}}_a'] } }
+        template_variables = [{ '{{CONTENT}}' => 'Placeholder' }]
+
+        @printer.update_content_hash(template, template_variables)
+
+        expect(template).to eql({ 'Level_1' => { 'Level_2a' => ['Placeholder_a'] } })
+      end
+    end
   end
 end

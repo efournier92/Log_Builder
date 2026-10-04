@@ -17,7 +17,7 @@ class TaskPrinterService
   end
 
   def append_output(text)
-    @output += text
+    @output << text
   end
 
   def print_node(node)
@@ -40,12 +40,12 @@ class TaskPrinterService
   def print_internal(node)
     return if node.nil?
 
-    reader = ConfigReaderService.new(@config_file)
+    @reader ||= ConfigReaderService.new(@config_file)
 
     node.each do |text, task|
       if template_string?(text)
         name = get_name_from_placeholder(text)
-        configured_template = reader.configured_template_by_name(name)
+        configured_template = @reader.configured_template_by_name(name)
         # TODO: Inform user if configured_template.nil?
         begin
           text = configured_template.keys[0]
@@ -108,10 +108,6 @@ class TaskPrinterService
 
   def decrement_depth
     @current_depth -= 1
-  end
-
-  def print_content(content)
-    print(content)
   end
 
   def update_content_array(template_placeholders, template_variables)

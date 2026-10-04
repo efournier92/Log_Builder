@@ -7,7 +7,7 @@ def valid_mode?(mode)
 end
 
 def valid_year_number?(year_number)
-  year_number.to_i.is_a?(Integer) && year_number.to_i.positive?
+  year_number.to_i.positive?
 end
 
 def valid_month?(month, mode)
@@ -39,7 +39,7 @@ def all_month?(month)
 end
 
 def print_month?(month)
-  !month.nil? && month.is_a?(Integer) && month&.positive?
+  month.is_a?(Integer) && month.positive?
 end
 
 def sanitize_month(month)

@@ -15,10 +15,10 @@ class LogBuilder
     @month = month
     @output_directory = output_directory
 
-    unless valid_config_file?(@config_file)
-      puts AppConstants::ERROR_MESSAGES[:INVALID_CONFIG_FILE]
-      raise SystemExit
-    end
+    return if valid_config_file?(@config_file)
+
+    puts AppConstants::ERROR_MESSAGES[:INVALID_CONFIG_FILE]
+    raise SystemExit, 1
   end
 
   def build_file

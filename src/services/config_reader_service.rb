@@ -21,7 +21,7 @@ class ConfigReaderService
   end
 
   def configured_template_by_name(name)
-    configured_task_templates[name]
+    configured_task_templates && configured_task_templates[name]
   end
 
   def configured_lg_templates

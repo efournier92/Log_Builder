@@ -237,6 +237,22 @@ describe LogBuilder do
     end
   end
 
+  describe '#collect_user_input' do
+    context 'given an invalid then valid response for each prompt' do
+      let(:builder) { LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], nil, nil, nil) }
+
+      it 're-prompts until every value is valid' do
+        allow($stdin).to receive(:gets).and_return("NOPE\n", "DO\n", "0\n", "2020\n", "13\n", "1\n")
+
+        builder.collect_user_input
+
+        expect(builder.mode).to eq(AppConstants::MODES[:DO])
+        expect(builder.year_number).to eq(2020)
+        expect(builder.month).to eq(1)
+      end
+    end
+  end
+
   context 'given proper inputs' do
     before :all do
       @output_dir = TestConstants::OUTPUT[:DIRECTORY]
@@ -257,12 +273,15 @@ describe LogBuilder do
     end
 
     context 'given build_file is executed without a month' do
-      it 'prints january 1st' do
-        builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, 1, @output_dir)
+      it 'prints the full year to DO_<year>.md' do
+        builder = LogBuilder.new(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', 2020, AppConstants::MODES[:ALL],
+                                 @output_dir)
         output = builder.build_file
         january_1st = output.find { |day| day.year == 2020 && day.month == 1 && day.month_day == 1 }
+        year_file = File.join(@output_dir, 'DO_2020.md')
 
         expect(january_1st).to_not be_nil
+        expect(File.exist?(year_file)).to be true
       end
     end
   end

@@ -4,7 +4,7 @@ class FileParser
   DO_BLOCK_START_PATTERN = "\n\n```text\n".freeze
   DO_BLOCK_END_PATTERN = "\n```\n\n".freeze
   DO_BLOCK_CRAP_PATTERN = "\n\n```\n".freeze
-  DATE_REGEX = /(\d{4}-\d{2}-\d{2})/.freeze
+  DATE_REGEX = /(\d{4}-\d{2}-\d{2})/
 
   def get_date_hash_from_do_file(file_contents)
     output = {}

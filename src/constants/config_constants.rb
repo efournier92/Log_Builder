@@ -8,7 +8,6 @@ module ConfigConstants
     LG_TEMPLATE_WEEKEND: 'weekend',
     TEMPLATE: 'template',
     TEMPLATE_VARIABLES: 'template_variables',
-    SPECIFIC_DATE: 'specific_date',
     METHOD: 'method',
     CONTENT: 'content',
     TAG: 'tag',
