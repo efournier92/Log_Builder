@@ -295,6 +295,36 @@ describe TaskPrinterService do
     end
   end
 
+  describe '#resolve_template' do
+    context 'given template variables' do
+      it 'returns the substituted tree' do
+        template = { 'Holiday' => ['{{CONTENT}}'] }
+        variables = [{ '{{CONTENT}}' => 'Resolved' }]
+
+        output = @printer.resolve_template(template, variables)
+
+        expect(output).to eq('Holiday' => ['Resolved'])
+      end
+
+      it 'does not mutate the input template' do
+        template = { 'Holiday' => ['{{CONTENT}}'] }
+        variables = [{ '{{CONTENT}}' => 'Resolved' }]
+
+        @printer.resolve_template(template, variables)
+
+        expect(template).to eq('Holiday' => ['{{CONTENT}}'])
+      end
+    end
+
+    context 'given nil template variables' do
+      it 'returns the template unchanged' do
+        template = { 'Holiday' => ['{{CONTENT}}'] }
+
+        expect(@printer.resolve_template(template, nil)).to be(template)
+      end
+    end
+  end
+
   describe '#template_string' do
     context 'given a template node' do
       it 'returns true' do

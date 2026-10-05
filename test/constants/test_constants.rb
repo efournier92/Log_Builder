@@ -3,6 +3,7 @@ module TestConstants
     TEST_PATH: './test/test_config.yml',
     BLANK_PATH: './test/blank_config.yml',
     FAKE_PATH: './test/fake_config.yml',
+    COLLISION_PATH: './test/duplicate_tags_config.yml',
   }.freeze
 
   OUTPUT = {

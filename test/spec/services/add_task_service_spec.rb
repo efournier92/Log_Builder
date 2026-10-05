@@ -2,6 +2,7 @@ require './test/constants/test_constants'
 require './src/constants/config_constants'
 require './src/constants/app_constants'
 require './src/services/add_task_service'
+require './src/services/tag_merge_service'
 require './src/models/year'
 
 def get_day_from_year(do_year, year, month, month_day)
@@ -850,6 +851,66 @@ describe AddTaskService do
       expect { @service.to_nth_day_in_each_quarter(@do_year, config) }.to raise_error(
         format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'NTH_DAY is required')
       )
+    end
+  end
+
+  describe 'same-day tag merging' do
+    it 'stores a canonical root on the day for an internal tag' do
+      tag = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Drops'] })
+      config = {
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 1,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_specific_date(@do_year, config)
+      day = get_day_from_year(do_year, @year, 1, 1)
+
+      expect(day.tag_roots.length).to eq(1)
+      expect(day.tag_roots[0][:name]).to eq('Body')
+      expect(day.tag_roots[0][:leaf]).to be false
+    end
+
+    it 'merges two same-named tags added to the same day' do
+      first = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Drops'] })
+      second = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Camera'] })
+      base = {
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 1
+      }
+
+      @service.to_specific_date(@do_year, base.merge(ConfigConstants::KEYS[:TAG] => first))
+      do_year = @service.to_specific_date(@do_year, base.merge(ConfigConstants::KEYS[:TAG] => second))
+      day = get_day_from_year(do_year, @year, 1, 1)
+
+      expect(day.tag_roots.length).to eq(1)
+      ears = day.tag_roots[0][:children][0]
+      expect(ears[:children].map { |child| child[:name] }).to eq(%w[Camera Drops])
+    end
+
+    it 'keeps each day independent when the same config attaches to many days' do
+      tag = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Drops'] })
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      @service.to_each_day(@do_year, config)
+
+      touched = get_day_from_year(@do_year, @year, 1, 6)
+      untouched = get_day_from_year(@do_year, @year, 1, 13)
+      snapshot = Marshal.load(Marshal.dump(untouched.tag_roots))
+
+      extra = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Camera'] })
+      extra_config = {
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 6,
+        ConfigConstants::KEYS[:TAG] => extra
+      }
+      @service.to_specific_date(@do_year, extra_config)
+
+      expect(untouched.tag_roots).to eq(snapshot)
+      expect(touched.tag_roots[0][:children][0][:children].map { |child| child[:name] }).to eq(%w[Camera Drops])
     end
   end
 end

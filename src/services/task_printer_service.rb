@@ -40,10 +40,9 @@ class TaskPrinterService
   def print_internal(node)
     return if node.nil?
 
-    @reader ||= ConfigReaderService.new(@config_file)
-
     node.each do |text, task|
       if template_string?(text)
+        @reader ||= ConfigReaderService.new(@config_file)
         name = get_name_from_placeholder(text)
         configured_template = @reader.configured_template_by_name(name)
         # TODO: Inform user if configured_template.nil?
@@ -133,16 +132,18 @@ class TaskPrinterService
   end
 
   def print_from_template(template, template_variables)
-    return print(template) if template_variables.nil?
+    print(resolve_template(template, template_variables))
+  end
+
+  def resolve_template(template, template_variables)
+    return template if template_variables.nil?
 
     # Clone to avoid mutating the original template
     template_to_update = Marshal.load(Marshal.dump(template))
 
     update_content_hash(template_to_update, template_variables)
 
-    print(template_to_update)
-
-    "#{@output}\n"
+    template_to_update
   end
 
   def get_name_from_placeholder(input)

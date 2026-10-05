@@ -130,6 +130,63 @@ context 'User sketches a full-year DO file' do
     #   expect(@do_hash[date]).to include(expected)
     # end
   end
+
+  context 'given same-day root tag collisions' do
+    it 'keeps a day with no collision byte-identical' do
+      expect(@do_hash['2020-01-04']).to eq("\n\n```text\nTask_Name(\n  Task_Value,\n),")
+    end
+
+    it 'renders a single Level_1 on a Tuesday' do
+      expect(@do_hash['2020-01-07'].scan('Level_1,').size).to eq(1)
+    end
+
+    it 'keeps the Thursday leaf inside the internal Level_1' do
+      expected = "Level_1(\n  Level_1,\n  Level_2(\n    Level_3,\n  ),\n),"
+      expect(@do_hash['2020-01-02']).to include(expected)
+    end
+
+    it 'merges the two January 31st Holiday tags into one' do
+      expect(@do_hash['2020-01-31'].scan('Holiday(').size).to eq(1)
+      expect(@do_hash['2020-01-31']).to include("Holiday(\n  Last_Each_XDay,\n  Last_Day_In_January,\n),")
+    end
+  end
+end
+
+context 'User merges same-day root tags from a collision config' do
+  before :all do
+    @output_dir = TestConstants::OUTPUT[:DIRECTORY]
+    output_year = 2020
+    output_file_name = "#{@output_dir}/DO_#{output_year}.md"
+    @output_file_path = Pathname.new(output_file_name)
+
+    create_log_file(TestConstants::CONFIG_FILES[:COLLISION_PATH], 'DO', output_year, 'ALL', @output_dir)
+
+    file_contents = IO.read(@output_file_path)
+
+    file_parser = FileParser.new
+    @do_hash = file_parser.get_date_hash_from_do_file(file_contents)
+  end
+
+  after :all do
+    `rm -rf #{@output_dir}`
+  end
+
+  it 'merges the four Body contributions into one root' do
+    expect(@do_hash['2020-01-01'].scan('Body(').size).to eq(1)
+  end
+
+  it 'renders the union of Ears children with Drops_Apply deduped' do
+    expected = "Body(\n  Ears(\n    Drops_Apply,\n    Camera_Wax_Remove,\n  ),\n" \
+               "  Vitamins_Take(\n    Pills,\n  ),\n),"
+    expect(@do_hash['2020-01-01']).to include(expected)
+    expect(@do_hash['2020-01-01'].scan('Drops_Apply').size).to eq(1)
+  end
+
+  it 'places the merged Body above Zeta in the bottom slot' do
+    expected = "\n\n```text\nBody(\n  Ears(\n    Drops_Apply,\n    Camera_Wax_Remove,\n  ),\n" \
+               "  Vitamins_Take(\n    Pills,\n  ),\n),\nZeta,"
+    expect(@do_hash['2020-01-01']).to eq(expected)
+  end
 end
 
 context 'User sketches a full-year LG file' do

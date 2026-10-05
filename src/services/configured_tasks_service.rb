@@ -1,5 +1,6 @@
 require_relative './config_reader_service'
 require_relative './task_printer_service'
+require_relative './tag_merge_service'
 require_relative './add_task_service'
 require_relative '../models/year'
 require_relative '../constants/config_constants'
@@ -21,8 +22,8 @@ class ConfiguredTasksService
 
       template = config[ConfigConstants::KEYS[:TEMPLATE]] if template.nil?
 
-      config[ConfigConstants::KEYS[:TAG]] =
-        printer.print_from_template(template, template_variables)
+      resolved = printer.resolve_template(template, template_variables)
+      config[ConfigConstants::KEYS[:TAG]] = TagMergeService.roots_from_template(resolved)
 
       add_task_service.public_send(method, year, config)
     end
