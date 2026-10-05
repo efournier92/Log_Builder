@@ -4,6 +4,10 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-05 | [decision] | repo | Replaced the platform-specific Ruby Packer binary build with a single deterministic stdlib-only Ruby bundle produced by `build.rb`: Prism strips comments, blank lines, and leading indent while protecting literals; artifact is `builds/log-builder_YYYY-MM-DD`; runtime floor is Ruby 2.6+ | docs/specs/2026-10-05_SingleFileBuildBundle.md
+
+- 2026-10-05 | [finding] | repo | Stock macOS ships Ruby 2.6.10 through macOS 26, which sets the cross-platform runtime floor for the single-file bundle; common Linux defaults are Ruby 3.0 or newer | apple-oss-distributions/ruby tag `ruby-175`
+
 - 2026-10-05 | [outcome] | services | Lazy day render ends per-attach re-render: 200-daily-task padded config 17.6s -> 0.69s year and 17.9s -> 0.53s month; suite 332/0, rubocop clean, 15 outputs sha256-identical | src/models/day.rb:18
 
 - 2026-10-05 | [decision] | models | `Day#tasks` stays a rendered String but computes lazily from `tag_roots` plus `config_file`; `attach` invalidates with `tasks = nil`, yielding one render per printed day | src/models/day.rb:18
