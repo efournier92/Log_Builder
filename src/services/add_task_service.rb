@@ -27,6 +27,28 @@ class AddTaskService
     do_year
   end
 
+  def to_each_weekday(do_year, config)
+    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
+      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+    end
+
+    do_year.days.each do |day|
+      attach(day, config, do_year) if Year::WEEKDAY_DAY_NAMES.include?(day.name)
+    end
+    do_year
+  end
+
+  def to_each_weekend(do_year, config)
+    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
+      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+    end
+
+    do_year.days.each do |day|
+      attach(day, config, do_year) if Year::WEEKEND_DAY_NAMES.include?(day.name)
+    end
+    do_year
+  end
+
   def to_each_xday(do_year, config)
     day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
     raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)

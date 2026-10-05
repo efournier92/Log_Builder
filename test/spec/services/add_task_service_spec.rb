@@ -45,6 +45,198 @@ describe AddTaskService do
     end
   end
 
+  describe '#to_each_weekday' do
+    it 'adds a configured tag to a Monday, Wednesday, and Friday' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
+
+      do_year = @service.to_each_weekday(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 6).tasks).to include(tag)
+      expect(get_day_from_year(do_year, @year, 1, 1).tasks).to include(tag)
+      expect(get_day_from_year(do_year, @year, 1, 10).tasks).to include(tag)
+    end
+
+    it 'does not add the tag to a Saturday or Sunday' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
+
+      do_year = @service.to_each_weekday(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 4).tasks).to_not include(tag)
+      expect(get_day_from_year(do_year, @year, 1, 5).tasks).to_not include(tag)
+    end
+
+    it 'ignores even_only' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:EVEN_ONLY?] => true,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_weekday(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 6).tasks).to include(tag)
+    end
+
+    it 'ignores odd_only' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:ODD_ONLY?] => true,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_weekday(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 2, 3).tasks).to include(tag)
+    end
+
+    it 'returns the do_year' do
+      config = { ConfigConstants::KEYS[:TAG] => 'Test_Tag' }
+
+      expect(@service.to_each_weekday(@do_year, config)).to eq(@do_year)
+    end
+
+    it 'does not raise when day_name is absent' do
+      config = { ConfigConstants::KEYS[:TAG] => 'Test_Tag' }
+
+      expect { @service.to_each_weekday(@do_year, config) }.to_not raise_error
+    end
+
+    it 'raises for a supplied but valid day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekday(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], 'Monday')
+      )
+    end
+
+    it 'raises for an invalid day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekday(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], 'InvalidDay')
+      )
+    end
+
+    it 'raises for a present but nil day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => nil,
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekday(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], nil)
+      )
+    end
+
+    it 'adds the tag to a spillover weekday outside the calendar year' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
+
+      do_year = @service.to_each_weekday(@do_year, config)
+
+      expect(get_day_from_year(do_year, 2019, 12, 30).tasks).to include(tag)
+    end
+  end
+
+  describe '#to_each_weekend' do
+    it 'adds a configured tag to a Saturday and Sunday' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
+
+      do_year = @service.to_each_weekend(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 4).tasks).to include(tag)
+      expect(get_day_from_year(do_year, @year, 1, 5).tasks).to include(tag)
+    end
+
+    it 'does not add the tag to a Monday or Friday' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
+
+      do_year = @service.to_each_weekend(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 6).tasks).to_not include(tag)
+      expect(get_day_from_year(do_year, @year, 1, 10).tasks).to_not include(tag)
+    end
+
+    it 'ignores even_only' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:EVEN_ONLY?] => true,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_weekend(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 1, 4).tasks).to include(tag)
+    end
+
+    it 'ignores odd_only' do
+      tag = 'Test_Tag'
+      config = {
+        ConfigConstants::KEYS[:ODD_ONLY?] => true,
+        ConfigConstants::KEYS[:TAG] => tag
+      }
+
+      do_year = @service.to_each_weekend(@do_year, config)
+
+      expect(get_day_from_year(do_year, @year, 2, 1).tasks).to include(tag)
+    end
+
+    it 'returns the do_year' do
+      config = { ConfigConstants::KEYS[:TAG] => 'Test_Tag' }
+
+      expect(@service.to_each_weekend(@do_year, config)).to eq(@do_year)
+    end
+
+    it 'does not raise when day_name is absent' do
+      config = { ConfigConstants::KEYS[:TAG] => 'Test_Tag' }
+
+      expect { @service.to_each_weekend(@do_year, config) }.to_not raise_error
+    end
+
+    it 'raises for an invalid day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'InvalidDay',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekend(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], 'InvalidDay')
+      )
+    end
+
+    it 'raises for a supplied day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => 'Saturday',
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekend(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], 'Saturday')
+      )
+    end
+
+    it 'raises for a present but nil day_name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => nil,
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_weekend(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], nil)
+      )
+    end
+  end
+
   describe '#to_specific_date' do
     it 'adds a configured tag to January 1st' do
       month = 1

@@ -233,8 +233,14 @@ tasks_config:
 
 - [`to_specific_date`](#to_specific_date)
   - _Add to January 15th._
+- [`to_each_day`](#to_each_day)
+  - _Add to every day._
 - [`to_each_xday`](#to_each_xday)
   - _Add to every Friday._
+- [`to_each_weekday`](#to_each_weekday)
+  - _Add to every weekday (Monday through Friday)._
+- [`to_each_weekend`](#to_each_weekend)
+  - _Add to every weekend day (Saturday and Sunday)._
 - [`to_nth_xday_in_month`](#to_nth_xday_in_month)
   - _Add to the 2nd Friday in a specific month._
 - [`to_nth_xday_in_each_month`](#to_nth_xday_in_each_month)
@@ -272,6 +278,17 @@ Christmas:
     - '{{NAME}}': Christmas
 ```
 
+##### `to_each_day`
+
+```yaml
+Daily_Journal:
+  method: to_each_day
+  day_name: Monday
+  template: Code_Daily
+```
+
+The `day_name` key is required by the method but does not affect the schedule; any valid day name satisfies it.
+
 ##### `to_each_xday`
 
 ```yaml
@@ -279,6 +296,22 @@ Friday_Project:
   method: to_each_xday
   day_name: Friday
   template: Code_Daily
+```
+
+##### `to_each_weekday`
+
+```yaml
+Weekday_Standup:
+  method: to_each_weekday
+  template: Code_Daily
+```
+
+##### `to_each_weekend`
+
+```yaml
+Weekend_Review:
+  method: to_each_weekend
+  template: Weekly_Review
 ```
 
 ##### `to_nth_xday_in_month`
@@ -602,6 +635,13 @@ Birthday_AbeLincoln:
 ```
 
 ## Version History
+
+### 2026-10-04
+
+- Adds `to_each_weekday` and `to_each_weekend` scheduling methods.
+  - `to_each_weekday` attaches a task to every Monday through Friday.
+  - `to_each_weekend` attaches a task to every Saturday and Sunday.
+  - Both ignore `odd_only` and `even_only`, and reject a supplied `day_name`.
 
 ### 2024-05-01
 

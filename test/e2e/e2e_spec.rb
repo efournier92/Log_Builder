@@ -189,6 +189,40 @@ context 'User merges same-day root tags from a collision config' do
   end
 end
 
+context 'User schedules tasks for each weekday and weekend' do
+  before :all do
+    @output_dir = TestConstants::OUTPUT[:DIRECTORY]
+    output_year = 2020
+    output_file_name = "#{@output_dir}/DO_#{output_year}.md"
+    @output_file_path = Pathname.new(output_file_name)
+
+    create_log_file(TestConstants::CONFIG_FILES[:WEEKDAY_PATH], 'DO', output_year, 'ALL', @output_dir)
+
+    file_contents = IO.read(@output_file_path)
+
+    file_parser = FileParser.new
+    @do_hash = file_parser.get_date_hash_from_do_file(file_contents)
+  end
+
+  after :all do
+    `rm -rf #{@output_dir}`
+  end
+
+  it 'adds the weekday tag to Monday through Friday only' do
+    expect(@do_hash['2020-01-06']).to include('Weekday_Tag')
+    expect(@do_hash['2020-01-10']).to include('Weekday_Tag')
+    expect(@do_hash['2020-01-06']).to_not include('Weekend_Tag')
+    expect(@do_hash['2020-01-10']).to_not include('Weekend_Tag')
+  end
+
+  it 'adds the weekend tag to Saturday and Sunday only' do
+    expect(@do_hash['2020-01-04']).to include('Weekend_Tag')
+    expect(@do_hash['2020-01-05']).to include('Weekend_Tag')
+    expect(@do_hash['2020-01-04']).to_not include('Weekday_Tag')
+    expect(@do_hash['2020-01-05']).to_not include('Weekday_Tag')
+  end
+end
+
 context 'User sketches a full-year LG file' do
   before :all do
     @output_dir = TestConstants::OUTPUT[:DIRECTORY]
