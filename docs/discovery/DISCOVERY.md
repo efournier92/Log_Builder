@@ -4,6 +4,10 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-05 | [outcome] | services | Shipped optional `birth_year` age rendering through `{{AGE}}`: added `BIRTH_YEAR`/`AGE` constants, `with_birth_year`/`template_includes?`, `test/birthday_age_config.yml`, a 9-example unit context, README Birthdays/Version History/TODO and glossary entries; full suite 321 examples 0 failures, rubocop 28 files 0 offenses; `test/test_config.yml` and e2e outputs unchanged | src/services/configured_tasks_service.rb:39; `bundle exec rspec`
+
+- 2026-10-05 | [decision] | services | `birth_year` is an optional Integer task key valid only with `to_specific_date`; `{{AGE}}` renders build year minus birth year, resolved once in `ConfiguredTasksService#add_configured_tasks` before `resolve_template`; a non-Integer, nil, future, other-method, or `{{AGE}}`-less template raises `INVALID_CONFIG` | docs/specs/2026-10-05_BirthdayAgeFromBirthYear.md
+
 - 2026-10-04 | [outcome] | services | Shipped optional `tag_order_config` root-tag ordering: 312 examples 0 failures, rubocop 28 files 0 offenses; `TagMergeService.order_roots` is 100% line/branch covered and the changed `src/` files are 100% except two pre-existing uncovered `tag_merge_service.rb` lines | test/spec/services/tag_merge_service_spec.rb; `RUBYOPT=-r/tmp/lb_cov.rb bundle exec rspec`
 
 - 2026-10-04 | [decision] | services | `tag_order_config` is an ordered list, top first, with the reserved `~~OTHER~~` marker for unlisted tags; order runs after same-day merge, applies to root tags only, stable ties keep current order, and a missing marker puts unlisted tags after listed ones | docs/specs/2026-10-04_TagOrderConfig.md

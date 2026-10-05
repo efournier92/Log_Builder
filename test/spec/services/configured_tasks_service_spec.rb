@@ -114,6 +114,100 @@ describe ConfiguredTasksService do
     end
   end
 
+  context 'given a birthday task with a birth year' do
+    def stub_birthday_task(birth_year:, method: 'to_specific_date', template: ['Name({{NAME}},)', 'Age({{AGE}},)'])
+      task = {
+        ConfigConstants::KEYS[:METHOD] => method,
+        ConfigConstants::KEYS[:BIRTH_YEAR] => birth_year,
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 3,
+        ConfigConstants::KEYS[:TEMPLATE] => 'Birthday_With_Age',
+        ConfigConstants::KEYS[:TEMPLATE_VARIABLES] => [
+          { '{{NAME}}' => 'PersonsName' },
+          { '{{CONTACT}}' => '000-000-0000' }
+        ]
+      }
+      reader = double('ConfigReaderService')
+      allow(reader).to receive(:configured_tasks).and_return('Birthday_Age_Person' => task)
+      allow(reader).to receive(:configured_task_templates).and_return(
+        'Birthday_With_Age' => { 'Birthday' => template }
+      )
+      allow(reader).to receive(:tag_order).and_return([])
+      allow(ConfigReaderService).to receive(:new).and_return(reader)
+    end
+
+    it 'computes the age against the build year' do
+      year = Year.new(2020, TestConstants::CONFIG_FILES[:BIRTHDAY_AGE_PATH])
+
+      day = year.days.find { |d| d.year == 2020 && d.month == 1 && d.month_day == 3 }
+      expected_tag = "Birthday(\n  Name(PersonsName,),\n  Contact(000-000-0000,),\n  Age(44,),\n),"
+      expect(day.tasks).to include(expected_tag)
+    end
+
+    it 'uses the new build year when it changes' do
+      year = Year.new(2021, TestConstants::CONFIG_FILES[:BIRTHDAY_AGE_PATH])
+
+      day = year.days.find { |d| d.year == 2021 && d.month == 1 && d.month_day == 3 }
+      expect(day.tasks).to include('Age(45,),')
+    end
+
+    it 'uses the one build year for the adjacent-year occurrence' do
+      year = Year.new(2020, TestConstants::CONFIG_FILES[:BIRTHDAY_AGE_PATH])
+
+      day = year.days.find { |d| d.year == 2021 && d.month == 1 && d.month_day == 3 }
+      expect(day.tasks).to include('Age(44,),')
+    end
+
+    it 'renders a zero age when the birth year matches the build year' do
+      stub_birthday_task(birth_year: 2020)
+
+      year = Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH])
+
+      day = year.days.find { |d| d.year == 2020 && d.month == 1 && d.month_day == 3 }
+      expect(day.tasks).to include('Age(0,),')
+    end
+
+    it 'raises when birth_year is not an integer' do
+      stub_birthday_task(birth_year: '1976')
+
+      expect { Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH]) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year must be an integer')
+      )
+    end
+
+    it 'raises when birth_year is present but nil' do
+      stub_birthday_task(birth_year: nil)
+
+      expect { Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH]) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year must be an integer')
+      )
+    end
+
+    it 'raises when birth_year is in the future' do
+      stub_birthday_task(birth_year: 2021)
+
+      expect { Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH]) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year cannot be in the future')
+      )
+    end
+
+    it 'raises when the template does not reference the age placeholder' do
+      stub_birthday_task(birth_year: 1976, template: ['Name({{NAME}},)'])
+
+      expect { Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH]) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year requires {{AGE}} in the template')
+      )
+    end
+
+    it 'raises when birth_year is used on another method' do
+      stub_birthday_task(birth_year: 1976, method: 'to_each_day')
+
+      expect { Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH]) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year is only supported with to_specific_date')
+      )
+    end
+  end
+
   context 'given same-day root tag collisions' do
     it 'stores a canonical roots array under the tag key' do
       task_config = {

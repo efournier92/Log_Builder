@@ -6,6 +6,7 @@ module TestConstants
     COLLISION_PATH: './test/duplicate_tags_config.yml',
     WEEKDAY_PATH: './test/each_weekday_config.yml',
     ORDER_PATH: './test/tag_order_config.yml',
+    BIRTHDAY_AGE_PATH: './test/birthday_age_config.yml',
   }.freeze
 
   OUTPUT = {

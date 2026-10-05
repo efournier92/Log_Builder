@@ -21,6 +21,7 @@ module ConfigConstants
     IS_EACH?: 'is_each',
     EVEN_ONLY?: 'even_only',
     ODD_ONLY?: 'odd_only',
+    BIRTH_YEAR: 'birth_year',
   }.freeze
 
   TAG_ORDER_MARKER = '~~OTHER~~'.freeze
@@ -28,7 +29,8 @@ module ConfigConstants
   PLACEHOLDERS = {
     TEMPLATE_START: '{{',
     TEMPLATE_END: '}}',
-    CONTENT: '{{CONTENT}}'
+    CONTENT: '{{CONTENT}}',
+    AGE: '{{AGE}}'
   }.freeze
 
   CONFIGURED_TASK_METHODS = {
