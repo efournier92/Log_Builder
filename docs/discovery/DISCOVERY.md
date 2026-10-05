@@ -4,6 +4,16 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-04 | [outcome] | services | Shipped optional `tag_order_config` root-tag ordering: 312 examples 0 failures, rubocop 28 files 0 offenses; `TagMergeService.order_roots` is 100% line/branch covered and the changed `src/` files are 100% except two pre-existing uncovered `tag_merge_service.rb` lines | test/spec/services/tag_merge_service_spec.rb; `RUBYOPT=-r/tmp/lb_cov.rb bundle exec rspec`
+
+- 2026-10-04 | [decision] | services | `tag_order_config` is an ordered list, top first, with the reserved `~~OTHER~~` marker for unlisted tags; order runs after same-day merge, applies to root tags only, stable ties keep current order, and a missing marker puts unlisted tags after listed ones | docs/specs/2026-10-04_TagOrderConfig.md
+
+- 2026-10-04 | [decision] | services | A configured root tag named `ConfigConstants::TAG_ORDER_MARKER` (`~~OTHER~~`) raises `INVALID_CONFIG` even with no `tag_order_config`, because the name is globally reserved | src/services/tag_merge_service.rb:19
+
+- 2026-10-04 | [decision] | services | `to_each_day` now rejects any supplied `day_name` (valid or not) with `INVALID_DAY_NAME`, matching `to_each_weekday` and `to_each_weekend`; this breaks configs that passed the previously required `day_name` | src/services/add_task_service.rb:24
+
+- 2026-10-04 | [trap] | test | The first `tag_order_config` order tests attached the bottom tag first, so insertion order already matched the expectation and they passed without the feature; reordered to attach the bottom tag last and added a no-order counterfactual | test/spec/services/add_task_service_spec.rb:1125
+
 - 2026-10-04 | [outcome] | services | Fixed get_date_hash_from_do_file: the loop no longer hangs, slice! lengths are corrected, and malformed input (unterminated date line, missing, truncated, or misattributed block, CRLF) now raises ArgumentError instead of silently dropping days; replaced the dead commented-out does-not-hang stub with four real regression tests; full suite 283 examples 0 failures, rubocop 28 files 0 offenses | src/services/file_parser_service.rb:9; test/spec/services/file_parser_service_spec.rb:33
 
 - 2026-10-04 | [decision] | test | Deleted the pending FileParser single-day example instead of enabling it: its stripped-fence expectation contradicted the fence-preserving two-day spec and the byte-identical e2e outputs, and single-day is not a separate code path; suite now 279 examples 0 failures 0 pending | src/services/file_parser_service.rb:33; test/spec/services/file_parser_service_spec.rb
