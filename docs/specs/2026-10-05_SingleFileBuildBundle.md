@@ -44,7 +44,7 @@ All claims below were read from the working tree this session.
 - Test harness: `.rspec` sets `--default-path test`. `test/spec/run_spec.rb:6-8` runs `Open3.capture3('ruby', './src/run.rb', *args)`. `test/e2e/e2e_spec.rb:5-7` shells out to `ruby ./src/run.rb` and reads generated files. `test/constants/test_constants.rb:2-15` holds fixture paths and the `./_out_test` output directory.
 - Current baseline: 332 examples, 0 failures, rubocop 28 files, 0 offenses (`docs/discovery/DISCOVERY.md`, "Lazy day render" outcome).
 - Build host: `ruby 3.4.7` with `Prism 1.9.0` available (`.tool-versions:1` pins `ruby 3.4.7`).
-- Source uses only Ruby 2.3+ and 2.4+ features: safe navigation (`src/modules/log_builder.rb:62`) and `match?` (`src/services/input_validation_service.rb:34`). No 3.x-only syntax (no endless methods, numbered params, pattern matching, `Data.define`, `filter_map`, `Hash#except`).
+- Source uses only Ruby 2.3+ and 2.4+ features after this change: safe navigation (`src/modules/log_builder.rb:62`) and `match?` (`src/services/input_validation_service.rb:34`). The prior Ruby 3.1 hash value omission at `src/services/tag_merge_service.rb:125,129` is expanded to `name: name` at `:127,131` behind a local `rubocop:disable Style/HashSyntax`; it was the only 3.x-only syntax found.
 - Minification surface: 7 comment-only lines, 3 inline comments, 233 blank lines, and no heredocs, `=begin`/`=end` blocks, `__END__`, or multiline string literals.
 - No `builds/` directory currently exists on disk.
 
@@ -92,7 +92,7 @@ All claims below were read from the working tree this session.
 - Ruby 3.3 or newer on the build host so `require 'prism'` succeeds. The pinned dev toolchain is 3.4.7 and already satisfies this.
 - A clean working tree for the files this feature touches; the spec, glossary, and discovery edits are committed on the feature branch before implementation starts.
 - No new entries in `Gemfile`. Prism is a Ruby 3.4 default gem; the build script does not use Bundler.
-- A basic Docker or rbenv install only for the optional Ruby 2.6 verification step.
+- Stock macOS `ruby 2.6.10` covers the optional Ruby 2.6 verification step directly; Docker or rbenv is the fallback on hosts without it.
 
 ## Design Principles
 
@@ -139,6 +139,7 @@ Create `build.rb` at the repository root.
 - `FILE_PREFIX = 'log-builder_'`.
 - `DATE_FORMAT = '%Y-%m-%d'`.
 - `HEADER`: the exact header described below.
+- `HEADER_REQUIRES = %w[yaml fileutils]`: the exact non-relative requires `HEADER` carries; the build raises when the recorded source requires differ.
 
 `LogBuilderBundler.build(root)` returns the Bundle as a `String` and writes nothing.
 
@@ -166,7 +167,7 @@ Apply this to each file in `SOURCE_ORDER`, then concatenate in order with a sing
 
 1. Read the file as UTF-8.
 2. Remove every line whose stripped text matches `/\Arequire_relative\b/`.
-3. Remove every line whose stripped text matches `/\Arequire\s+['"][^'"]+['"]/`, and record the non-relative require for the hoisted header. A require is non-relative when the quoted name does not start with `.` or `/`.
+3. Remove every line whose stripped text matches `/\Arequire\s+['"][^'"]+['"]/`, and record the non-relative require. A require is non-relative when the quoted name does not start with `.` or `/`. The build raises when the recorded list differs from `HEADER_REQUIRES`, so a future stdlib require is never silently dropped.
 4. Parse the remaining text once with `Prism.parse` and collect two offset sets:
    - comment ranges from `result.comments`.
    - protected literal ranges from every string, symbol, regular expression, and heredoc node. In Prism these are `StringNode`, `InterpolatedStringNode`, `XStringNode`, `InterpolatedXStringNode`, `SymbolNode`, `InterpolatedSymbolNode`, `RegularExpressionNode`, `InterpolatedRegularExpressionNode`, `MatchLastLineNode`, and any heredoc node, whose location already spans its body.
@@ -211,9 +212,9 @@ AllCops:
   - Remove the Ruby Packer fork link and the download-requirements list.
   - State that `ruby build.rb` produces `builds/log-builder_YYYY-MM-DD`, a single self-contained Ruby file.
   - State the runtime requirement: any stock Ruby 2.6 or newer, with only the `yaml` and `fileutils` standard libraries. State that rebuilding from source needs Ruby 3.3 or newer for `prism`.
-  - Give the run and install forms: run `ruby builds/log-builder_2026-10-05 ./log_builder_config.yml`; install with `cp builds/log-builder_2026-10-05 /usr/local/bin/log-builder` so the documented `log-builder` command resolves.
+  - Give the run and install forms: run `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml` (the repo sample is `test/test_config.yml`); install with `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/log-builder` into a directory on `PATH`, noting `sudo` only for system directories such as `/usr/local/bin`.
   - Note that the generated file is not edited by hand and is regenerated with `ruby build.rb`.
-- Add a `Version History` entry under the existing `### 2026-10-05` heading at `README.md:686` describing the single-file build and the retirement of the Ruby Packer binary path.
+- Add a `Version History` entry under the existing `### 2026-10-05` heading describing the single-file build and the retirement of the Ruby Packer binary path.
 
 ## Frontend / UI Requirements
 
@@ -225,7 +226,7 @@ None. This feature has no user interface, and no backend enum values map to labe
 - Committed snapshot drifts from source: mitigated by the drift example in `build_spec.rb`, which fails when `src/` produces different bytes than the newest snapshot.
 - Generated code bloats repository history: mitigated because content is deterministic and git deduplicates identical blobs; the maintainer controls build frequency.
 - Reintroducing `builds/` to future history conflicts with the privacy plan: documented here; the plan only removes old binary blobs and is untouched.
-- Ruby 2.6 is end-of-life and Apple-deprecated: accepted to reach stock macOS; the source already uses no newer features; verified with a Docker `ruby:2.6` syntax check. If Apple removes Ruby, the floor can rise without source changes.
+- Ruby 2.6 is end-of-life and Apple-deprecated: accepted to reach stock macOS; the source uses no newer features after the `tag_merge_service.rb` normalization; verified on stock `ruby 2.6.10` (syntax check plus a full DO-year run, byte-identical output). If Apple removes Ruby, the floor can rise without source changes.
 - `YAML.load_file` parses differently on Psych 3 versus Psych 5: pre-existing, out of scope, and flagged so it is not mistaken for a build regression.
 - Prism is unavailable on the build host: `build.rb` aborts non-zero rather than emitting unminified or regex-stripped output, keeping the artifact trustworthy.
 - Concurrent builds overwrite the same-day snapshot: acceptable for a single-maintainer tool; content is deterministic so the result is the same.
@@ -234,7 +235,7 @@ None. This feature has no user interface, and no backend enum values map to labe
 ## Rollout Plan
 
 1. Sync `main` to `origin/main` at `27b5d31`, branch `single-file-build` from `main`, and commit the spec docs.
-2. Move FileParser and update the two test requires.
+2. Normalize `src/services/tag_merge_service.rb:127,131` to explicit hash values for the Ruby 2.6 floor, move FileParser to `test/support/`, and update the two test requires.
 3. Add `build.rb` with the module and CLI.
 4. Delete `build_package`; update `.gitignore`, `.rubocop.yml`, and `README.md`.
 5. Run `ruby build.rb` to create `builds/log-builder_<today>` from the current source.
@@ -256,7 +257,7 @@ Requires `./build`, `open3`, `tmpdir`, `fileutils`, `date`. Define `ROOT = File.
 - Determinism: two calls to `LogBuilderBundler.build(ROOT)` return equal strings, proving no timestamp leaks into content.
 - Syntax: write the Bundle to a `Dir.mktmpdir` file; `Open3.capture3('ruby', '-c', path)` exits `0` and prints `Syntax OK`.
 - `write` path: `Dir.mktmpdir` with `FileUtils.cp_r` of `src/`; `LogBuilderBundler.write(tmp, date: Date.new(2026, 1, 1))` returns `<tmp>/builds/log-builder_2026-01-01`, writes bytes equal to `bundle`, sets mode `0755`, and a second call with the same date overwrites the file.
-- Drift: glob `File.join(ROOT, 'builds', 'log-builder_*')`, sort, take the last element as the newest snapshot, and assert `bundle == File.binread(newest)`. When the glob is empty, fail the example with a clear message; a missing snapshot is a failure, never a skip. This is the only example that reads committed artifacts and it never writes them.
+- Drift: list snapshots tracked at `HEAD` via `git ls-files -- builds/` filtered to `log-builder_*`; when any are tracked, take the newest by filename and assert `bundle` equals the `git show HEAD:<newest>` bytes. When none are tracked (the first snapshot is not committed yet), fall back to the filesystem glob `File.join(ROOT, 'builds', 'log-builder_*')`. When nothing is found, fail the example with a clear message; a missing snapshot is a failure, never a skip. This is the only example that reads committed artifacts and it never writes them.
 - Equivalence, DO year: write the Bundle to a tmp file; run `ruby ./src/run.rb ./test/test_config.yml DO 2020 ALL <src_out>` and `ruby <bundle> ./test/test_config.yml DO 2020 ALL <bundle_out>` from `ROOT`; expect both exit statuses `0` and `File.binread(bundle_out/DO_2020.md) == File.binread(src_out/DO_2020.md)`.
 - Equivalence, LG year: the same comparison with mode `LG`, comparing `LG_2020.md`.
 - Equivalence, tag order and merge: the same comparison with mode `DO`, year `2020`, month `ALL`, config `./test/tag_order_config.yml`, comparing `DO_2020.md`.
@@ -266,7 +267,7 @@ Do not invoke the CLI `ruby build.rb` from the suite, because it writes to the f
 
 ### `test/spec/services/file_parser_service_spec.rb` (modified)
 
-- Only the require on line 1 changes to `./test/support/file_parser`. All seven examples stay identical.
+- Only the require on line 1 changes to `./test/support/file_parser`. All nine examples stay identical.
 
 ### `test/e2e/e2e_spec.rb` (modified)
 
@@ -277,8 +278,10 @@ Expected suite result after the change: the current 332 examples plus the new bu
 ## Summary Of Changes
 
 - [ ] `build.rb` added at the repository root with `LogBuilderBundler.build`, `LogBuilderBundler.write`, the `SOURCE_ORDER`, the deterministic header, and the Prism-based strip.
+- [ ] `build.rb` records source requires and raises when they differ from `HEADER_REQUIRES`.
 - [ ] `build_package` deleted.
 - [ ] `src/services/file_parser_service.rb` moved to `test/support/file_parser.rb`.
+- [ ] `src/services/tag_merge_service.rb:127,131` hash value omission expanded to `name: name` so the Bundle parses on Ruby 2.6.
 - [ ] `test/spec/services/file_parser_service_spec.rb:1` require updated.
 - [ ] `test/e2e/e2e_spec.rb:1` require updated.
 - [ ] `test/spec/build_spec.rb` added with the header, requires, determinism, syntax, the `write` path, drift, and three equivalence cases.
@@ -295,12 +298,12 @@ Expected suite result after the change: the current 332 examples plus the new bu
 1. `ruby build.rb` prints or returns `builds/log-builder_<today>` and the file exists with mode `0755`.
 2. `ruby -c builds/log-builder_<today>` prints `Syntax OK`.
 3. `rg -n 'require_relative|require ["'"'"']\./' builds/log-builder_<today>` returns nothing.
-4. `wc -c src/**/*.rb` sum versus `wc -c builds/log-builder_<today>` shows the Bundle is smaller than the raw source sum (30,988 bytes plus header), proving the strip ran.
+4. `wc -c src/**/*.rb` sum versus `wc -c builds/log-builder_<today>` shows the Bundle is smaller than the raw source sum (31,168 bytes plus header), proving the strip ran.
 5. `ruby builds/log-builder_<today> ./test/test_config.yml DO 2020 ALL /tmp/lb_bundle` and `ruby ./src/run.rb ./test/test_config.yml DO 2020 ALL /tmp/lb_src`, then `diff -r /tmp/lb_src /tmp/lb_bundle` reports no differences.
 6. `ruby builds/log-builder_<today> ./test/test_config.yml LG 2020 ALL /tmp/lb_bundle_lg` and the matching `src/run.rb` run diff clean.
 7. `bundle exec rspec` reports 0 failures and 0 pending.
 8. `bundle exec rubocop` reports 0 offenses and does not inspect `builds/`.
-9. Ruby 2.6 compatibility: `docker run --rm -v "$PWD":/app -w /app ruby:2.6 ruby -c builds/log-builder_<today>` prints `Syntax OK`, and `docker run --rm -v "$PWD":/app -w /app ruby:2.6 ruby builds/log-builder_<today> ./test/test_config.yml DO 2020 1 /tmp/lb26` exits `0`.
+9. Ruby 2.6 compatibility: on stock macOS, `/usr/bin/ruby -c builds/log-builder_<today>` prints `Syntax OK` and `env -u GEM_HOME /usr/bin/ruby builds/log-builder_<today> ./test/test_config.yml DO 2020 1 /tmp/lb26` exits `0` (the `env -u` strips a Homebrew `GEM_HOME` that shadows system psych/date on this machine). On hosts without system Ruby 2.6, the equivalent Docker `ruby:2.6` commands apply.
 10. `git status` shows the snapshot tracked and no generated scratch files.
 
 ## Open Questions

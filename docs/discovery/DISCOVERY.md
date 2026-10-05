@@ -4,6 +4,12 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-05 | [outcome] | build | Single-file build implemented: `build.rb` + `builds/log-builder_2026-10-05` (25,933 B, 0755); suite 345/0, rubocop 0; DO/LG/tag-order outputs byte-identical on 3.4.7 and the DO output identical on stock 2.6.10 | `bundle exec rspec`; `/usr/bin/ruby -c builds/log-builder_2026-10-05`
+
+- 2026-10-05 | [trap] | services | Ruby 3.1 hash value omission at `tag_merge_service.rb:125,129` broke the Ruby 2.6 floor; expanded to `name: name` behind a local `rubocop:disable Style/HashSyntax` | `/usr/bin/ruby -c builds/log-builder_2026-10-05` (syntax error before fix)
+
+- 2026-10-05 | [trap] | build | System `ruby 2.6.10` cannot require psych/date under a Homebrew `GEM_HOME` (tmuxinator); run system-2.6 checks with `env -u GEM_HOME` | `env -u GEM_HOME /usr/bin/ruby builds/log-builder_2026-10-05 ./test/test_config.yml DO 2020 ALL /tmp/lb26`
+
 - 2026-10-05 | [decision] | repo | Replaced the platform-specific Ruby Packer binary build with a single deterministic stdlib-only Ruby bundle produced by `build.rb`: Prism strips comments, blank lines, and leading indent while protecting literals; artifact is `builds/log-builder_YYYY-MM-DD`; runtime floor is Ruby 2.6+ | docs/specs/2026-10-05_SingleFileBuildBundle.md
 
 - 2026-10-05 | [finding] | repo | Stock macOS ships Ruby 2.6.10 through macOS 26, which sets the cross-platform runtime floor for the single-file bundle; common Linux defaults are Ruby 3.0 or newer | apple-oss-distributions/ruby tag `ruby-175`
