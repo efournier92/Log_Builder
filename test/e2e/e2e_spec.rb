@@ -1,4 +1,4 @@
-require './src/services/file_parser_service'
+require './test/support/file_parser'
 require './test/constants/test_constants'
 require 'pathname'
 
