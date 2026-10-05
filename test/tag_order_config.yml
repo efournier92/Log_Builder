@@ -1,0 +1,66 @@
+lg_templates_config:
+  base:
+    - ""
+    - "### Do"
+    - ""
+    - "```text"
+    - "```"
+task_templates_config:
+  Holiday_Template:
+    Holiday:
+      - '{{CONTENT}}'
+  Birthday_Template:
+    Birthday:
+      - '{{CONTENT}}'
+  Career_Template:
+    Career:
+      - '{{CONTENT}}'
+  Body_Template:
+    Body:
+      - Body_Detail
+  Alpha_Template:
+    - Alpha
+  Zeta_Template:
+    - Zeta
+tag_order_config:
+  - Holiday
+  - Birthday
+  - Career
+  - '~OTHER~'
+  - Body
+tasks_config:
+  Body_Task:
+    method: to_each_day
+    day_name: Monday
+    template: Body_Template
+  Holiday_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Holiday_Template
+    template_variables:
+      - '{{CONTENT}}': New_Year
+  Birthday_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Birthday_Template
+    template_variables:
+      - '{{CONTENT}}': Birthday_Person
+  Career_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Career_Template
+    template_variables:
+      - '{{CONTENT}}': Work_Thing
+  Alpha_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Alpha_Template
+  Zeta_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Zeta_Template

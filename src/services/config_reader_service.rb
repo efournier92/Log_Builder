@@ -31,4 +31,8 @@ class ConfigReaderService
   def configured_tasks
     @config[ConfigConstants::KEYS[:TASKS]].to_a.reverse.to_h
   end
+
+  def tag_order
+    @config.fetch(ConfigConstants::KEYS[:TAG_ORDER], [])
+  end
 end

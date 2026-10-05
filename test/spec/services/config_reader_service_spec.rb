@@ -92,6 +92,28 @@ describe ConfigReaderService do
     end
   end
 
+  describe '#tag_order' do
+    context 'given a config that defines tag_order_config' do
+      it 'returns the configured list' do
+        reader = ConfigReaderService.new(TestConstants::CONFIG_FILES[:ORDER_PATH])
+
+        expect(reader.tag_order).to eq(%w[Holiday Birthday Career ~OTHER~ Body])
+      end
+    end
+
+    context 'given a config that does not define tag_order_config' do
+      it 'returns an empty array' do
+        expect(@config_reader.tag_order).to eq([])
+      end
+
+      it 'returns an empty array for the blank config' do
+        reader = ConfigReaderService.new(TestConstants::CONFIG_FILES[:BLANK_PATH])
+
+        expect(reader.tag_order).to eq([])
+      end
+    end
+  end
+
   describe 'reading a blank config' do
     before :each do
       @blank_reader = ConfigReaderService.new(TestConstants::CONFIG_FILES[:BLANK_PATH])

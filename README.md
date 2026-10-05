@@ -18,6 +18,7 @@
     - [Task Examples](#examples)
     - [Holidays](#holidays)
     - [Birthdays](#birthdays)
+  - [Tag Order](#tag-order)
 - [Version History](#version-history)
 - [TODO Items](#todo-items)
 
@@ -620,6 +621,28 @@ Body(
   ),
 ),
 ```
+
+### Tag Order
+
+Root tags render in the order of the optional top-level `tag_order_config` list, top entry first. Without the key, root tags render in the order they attach.
+
+- Tag order applies to root tags only, and it runs after same-day merging, so a merged root takes its ordered slot.
+- List the root tag names in the order you want them, first to last.
+- Use the reserved `'~OTHER~'` entry to position every tag not named in the list. Quote it in YAML.
+- Without `'~OTHER~'`, unlisted tags render after all listed tags.
+- Tags that share a position keep their existing relative order.
+- Omit the key, or leave it empty, to render exactly as before.
+
+```yaml
+tag_order_config:
+  - Holiday
+  - Birthday
+  - Career
+  - '~OTHER~'
+  - Body
+```
+
+In the example, `Holiday`, `Birthday`, and `Career` render first in that order, every unlisted tag renders next, and `Body` renders last.
 
 ### Birthdays
 

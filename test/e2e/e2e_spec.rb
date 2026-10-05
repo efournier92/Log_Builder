@@ -189,6 +189,42 @@ context 'User merges same-day root tags from a collision config' do
   end
 end
 
+context 'User configures a root tag order' do
+  before :all do
+    @output_dir = TestConstants::OUTPUT[:DIRECTORY]
+    output_year = 2020
+    output_file_name = "#{@output_dir}/DO_#{output_year}.md"
+    @output_file_path = Pathname.new(output_file_name)
+
+    create_log_file(TestConstants::CONFIG_FILES[:ORDER_PATH], 'DO', output_year, 'ALL', @output_dir)
+
+    file_contents = IO.read(@output_file_path)
+
+    file_parser = FileParser.new
+    @do_hash = file_parser.get_date_hash_from_do_file(file_contents)
+  end
+
+  after :all do
+    `rm -rf #{@output_dir}`
+  end
+
+  it 'renders the configured root order on 2020-01-01' do
+    expected = "\n\n```text\n" \
+               "Holiday(\n  New_Year,\n),\n" \
+               "Birthday(\n  Birthday_Person,\n),\n" \
+               "Career(\n  Work_Thing,\n),\n" \
+               "Alpha,\n" \
+               "Zeta,\n" \
+               "Body(\n  Body_Detail,\n),"
+    expect(@do_hash['2020-01-01']).to eq(expected)
+  end
+
+  it 'sorts a later daily Body task below a once-a-year Holiday' do
+    expect(@do_hash['2020-01-01']).to match(/```text\nHoliday\(/)
+    expect(@do_hash['2020-01-01']).to end_with("Body(\n  Body_Detail,\n),")
+  end
+end
+
 context 'User schedules tasks for each weekday and weekend' do
   before :all do
     @output_dir = TestConstants::OUTPUT[:DIRECTORY]

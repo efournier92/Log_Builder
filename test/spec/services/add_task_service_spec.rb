@@ -1105,4 +1105,48 @@ describe AddTaskService do
       expect(touched.tag_roots[0][:children][0][:children].map { |child| child[:name] }).to eq(%w[Camera Drops])
     end
   end
+
+  describe 'tag order' do
+    let(:ordered_service) { AddTaskService.new(['Holiday', '~OTHER~', 'Body']) }
+
+    it 'orders roots by the configured list after attaching' do
+      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+               ConfigConstants::KEYS[:TAG] => 'Body' }
+      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
+
+      ordered_service.to_specific_date(@do_year, body)
+      ordered_service.to_specific_date(@do_year, holiday)
+      day = get_day_from_year(@do_year, @year, 1, 1)
+
+      expect(day.tag_roots.map { |node| node[:name] }).to eq(%w[Holiday Body])
+    end
+
+    it 'lands a root attached later in its ordered slot rather than on top' do
+      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+               ConfigConstants::KEYS[:TAG] => 'Body' }
+      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
+
+      ordered_service.to_specific_date(@do_year, body)
+      ordered_service.to_specific_date(@do_year, holiday)
+      day = get_day_from_year(@do_year, @year, 1, 1)
+
+      expect(day.tag_roots.first[:name]).to eq('Holiday')
+      expect(day.tag_roots.last[:name]).to eq('Body')
+    end
+
+    it 'renders the day in the ordered root order' do
+      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+               ConfigConstants::KEYS[:TAG] => 'Body' }
+      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
+                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
+
+      ordered_service.to_specific_date(@do_year, body)
+      ordered_service.to_specific_date(@do_year, holiday)
+      day = get_day_from_year(@do_year, @year, 1, 1)
+
+      expect(day.tasks).to eq("Holiday,\nBody,\n")
+    end
+  end
 end

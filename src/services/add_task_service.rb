@@ -4,6 +4,10 @@ require_relative '../constants/app_constants'
 require_relative './tag_merge_service'
 
 class AddTaskService
+  def initialize(tag_order = [])
+    @tag_order = tag_order
+  end
+
   def to_specific_date(do_year, config)
     month = config[ConfigConstants::KEYS[:MONTH]]
     month_day = config[ConfigConstants::KEYS[:DAY]]
@@ -201,6 +205,7 @@ class AddTaskService
   def attach(day, config, do_year)
     incoming = TagMergeService.canonical_roots(config[ConfigConstants::KEYS[:TAG]])
     day.tag_roots = TagMergeService.add_roots(day.tag_roots, incoming)
+    day.tag_roots = TagMergeService.order_roots(day.tag_roots, @tag_order)
     day.tasks = TagMergeService.render(day.tag_roots, do_year.config_file)
   end
 

@@ -1,6 +1,9 @@
 require_relative '../services/task_printer_service'
+require_relative '../constants/config_constants'
 
 class TagMergeService
+  OTHER_MARKER = '~OTHER~'.freeze
+
   def self.roots_from_template(template)
     return [] if template.nil?
     return [to_node(template, nil)] if template.is_a?(String)
@@ -13,6 +16,32 @@ class TagMergeService
     return [to_node(value, nil)] if value.is_a?(String)
 
     value
+  end
+
+  def self.order_roots(roots, tag_order)
+    return roots if tag_order.nil?
+    unless tag_order.is_a?(Array)
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config must be a list')
+    end
+    return roots if tag_order.empty?
+
+    positions = {}
+    default_rank = tag_order.length
+    tag_order.each_with_index do |entry, index|
+      unless entry.is_a?(String)
+        raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config entries must be strings')
+      end
+      if positions.key?(entry)
+        raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], "duplicate tag_order_config entry: #{entry}")
+      end
+
+      positions[entry] = index
+      default_rank = index if entry == OTHER_MARKER
+    end
+
+    roots.each_with_index
+         .sort_by { |node, index| [positions.fetch(node[:name], default_rank), index] }
+         .map(&:first)
   end
 
   def self.add_roots(existing, incoming)

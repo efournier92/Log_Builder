@@ -9,10 +9,11 @@ class ConfiguredTasksService
   def add_configured_tasks(year)
     config_file = year.config_file
     reader = ConfigReaderService.new(config_file)
-    add_task_service = AddTaskService.new
     tags = reader.configured_tasks
 
     return if tags.nil?
+
+    add_task_service = AddTaskService.new(reader.tag_order)
 
     tags.each_value do |config|
       printer = TaskPrinterService.new(config_file)

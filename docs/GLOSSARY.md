@@ -29,3 +29,7 @@ The merge-time representation shared by all tags, expressed as `{ name:, leaf:, 
 **Tag Tree**
 
 The nested structure a task printer consumes and renders, made of hashes and arrays. _Avoid_: AST, document model.
+
+**Tag Order**
+
+The configured sequence in `tag_order_config` that fixes the position of root tags within a day: a listed tag takes its list position, and the `~OTHER~` marker gives the position of every tag not named in the list. _Avoid_: tag weight, priority, rank.
