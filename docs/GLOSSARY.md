@@ -33,3 +33,15 @@ The nested structure a task printer consumes and renders, made of hashes and arr
 **Tag Order**
 
 The configured sequence in `tag_order_config` that fixes the position of root tags within a day: a listed tag takes its list position, and the `~~OTHER~~` marker gives the position of every tag not named in the list. _Avoid_: tag weight, priority, rank.
+
+**Build Year**
+
+The integer supplied on the command line and stored as `Year#year_number`, against which birthday age is calculated. _Avoid_: run year, target year.
+
+**Birth Year**
+
+The optional `birth_year` integer on a `to_specific_date` task recording the calendar year a person was born. _Avoid_: year, birthdate, dob.
+
+**Age**
+
+The Build Year minus the Birth Year, rendered as a base-10 integer string into a task's `{{AGE}}` placeholder. _Avoid_: completed age, exact age.
