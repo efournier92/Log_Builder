@@ -53,7 +53,7 @@ class Year
 
   def add_next_week
     DAY_NAMES.each do |day_name|
-      day = Day.new(day_name, '', @year_counter, @month_counter, @day_in_month_counter)
+      day = Day.new(day_name, '', @year_counter, @month_counter, @day_in_month_counter, @config_file)
       @days.push(day)
       @day_in_month_counter += 1
       next unless @day_in_month_counter > @days_in_months[@month_counter - 1]

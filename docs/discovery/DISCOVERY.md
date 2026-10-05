@@ -4,6 +4,12 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-05 | [outcome] | services | Lazy day render ends per-attach re-render: 200-daily-task padded config 17.6s -> 0.69s year and 17.9s -> 0.53s month; suite 332/0, rubocop clean, 15 outputs sha256-identical | src/models/day.rb:18
+
+- 2026-10-05 | [decision] | models | `Day#tasks` stays a rendered String but computes lazily from `tag_roots` plus `config_file`; `attach` invalidates with `tasks = nil`, yielding one render per printed day | src/models/day.rb:18
+
+- 2026-10-05 | [trap] | cli | Invalid or missing month with stdin at EOF spins the prompt loop at 100% CPU instead of exiting: `$stdin&.gets` returns nil so validity stays false | src/modules/log_builder.rb:62
+
 - 2026-10-05 | [decision] | repo | Renamed the default branch `master` to `main` locally and on `origin`, set the GitHub default to `main`, and retargeted the 16 doc references | `gh repo view --json defaultBranchRef` -> `main`
 
 - 2026-10-05 | [trap] | models | `Year` hardcoded 54 weeks (378 days) and mis-seeded Monday January 1 as prior December 25, leaking an extra week into year-mode files | docs/specs/2026-10-05_YearBoundaryFullWeeks.md

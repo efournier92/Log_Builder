@@ -203,11 +203,11 @@ class AddTaskService
     raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
   end
 
-  def attach(day, config, do_year)
+  def attach(day, config, _do_year)
     incoming = TagMergeService.canonical_roots(config[ConfigConstants::KEYS[:TAG]])
     day.tag_roots = TagMergeService.add_roots(day.tag_roots, incoming)
     day.tag_roots = TagMergeService.order_roots(day.tag_roots, @tag_order)
-    day.tasks = TagMergeService.render(day.tag_roots, do_year.config_file)
+    day.tasks = nil # minimalist: invalidate the lazy render cache so it rebuilds on next read.
   end
 
   def skip_even_month?(config, day)
