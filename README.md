@@ -18,6 +18,7 @@
     - [Task Examples](#examples)
     - [Holidays](#holidays)
     - [Birthdays](#birthdays)
+  - [Tag Order](#tag-order)
 - [Version History](#version-history)
 - [TODO Items](#todo-items)
 
@@ -283,11 +284,10 @@ Christmas:
 ```yaml
 Daily_Journal:
   method: to_each_day
-  day_name: Monday
   template: Code_Daily
 ```
 
-The `day_name` key is required by the method but does not affect the schedule; any valid day name satisfies it.
+`day_name` is not accepted; the method attaches to every day, and supplying a `day_name` (valid or not) raises an `INVALID_DAY_NAME` error.
 
 ##### `to_each_xday`
 
@@ -621,6 +621,29 @@ Body(
 ),
 ```
 
+### Tag Order
+
+Root tags render in the order of the optional top-level `tag_order_config` list, top entry first. Without the key, root tags render in the order they attach.
+
+- Tag order applies to root tags only, and it runs after same-day merging, so a merged root takes its ordered slot.
+- List the root tag names in the order you want them, first to last.
+- Use the reserved `'~~OTHER~~'` entry to position every tag not named in the list. Quote it in YAML.
+- Without `'~~OTHER~~'`, unlisted tags render after all listed tags.
+- Tags that share a position keep their existing relative order.
+- Omit the key, or leave it empty, to render exactly as before.
+- A configured root tag named `~~OTHER~~` is reserved and raises an `INVALID_CONFIG` error, even when `tag_order_config` is absent.
+
+```yaml
+tag_order_config:
+  - Holiday
+  - Birthday
+  - Career
+  - '~~OTHER~~'
+  - Body
+```
+
+In the example, `Holiday`, `Birthday`, and `Career` render first in that order, every unlisted tag renders next, and `Body` renders last.
+
 ### Birthdays
 
 ```yaml
@@ -642,6 +665,8 @@ Birthday_AbeLincoln:
   - `to_each_weekday` attaches a task to every Monday through Friday.
   - `to_each_weekend` attaches a task to every Saturday and Sunday.
   - Both ignore `odd_only` and `even_only`, and reject a supplied `day_name`.
+- Adds optional `tag_order_config` root tag ordering, applied after same-day merging, with the reserved `~~OTHER~~` marker for unlisted tags, and a raise when a configured tag uses the reserved marker name.
+- Changes `to_each_day` to reject a supplied `day_name` (valid or not), matching `to_each_weekday` and `to_each_weekend`.
 
 ### 2024-05-01
 

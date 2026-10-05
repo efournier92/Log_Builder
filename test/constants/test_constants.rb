@@ -5,6 +5,7 @@ module TestConstants
     FAKE_PATH: './test/fake_config.yml',
     COLLISION_PATH: './test/duplicate_tags_config.yml',
     WEEKDAY_PATH: './test/each_weekday_config.yml',
+    ORDER_PATH: './test/tag_order_config.yml',
   }.freeze
 
   OUTPUT = {

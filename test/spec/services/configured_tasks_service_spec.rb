@@ -103,6 +103,7 @@ describe ConfiguredTasksService do
             ConfigConstants::TEMPLATE_TYPES[:HOLIDAY] => ['{{CONTENT}}'],
           }
         )
+        allow(reader).to receive(:tag_order).and_return([])
         allow(ConfigReaderService).to receive(:new).and_return(reader)
 
         @tag_service.add_configured_tasks(@year)
@@ -127,6 +128,7 @@ describe ConfiguredTasksService do
       allow(reader).to receive(:configured_task_templates).and_return(
         'Holiday' => { 'Holiday' => ['{{CONTENT}}'] }
       )
+      allow(reader).to receive(:tag_order).and_return([])
       allow(ConfigReaderService).to receive(:new).and_return(reader)
 
       @tag_service.add_configured_tasks(@year)
@@ -146,6 +148,7 @@ describe ConfiguredTasksService do
       reader = double('ConfigReaderService')
       allow(reader).to receive(:configured_tasks).and_return('Missing_Task' => task_config)
       allow(reader).to receive(:configured_task_templates).and_return({})
+      allow(reader).to receive(:tag_order).and_return([])
       allow(ConfigReaderService).to receive(:new).and_return(reader)
 
       expect { @tag_service.add_configured_tasks(@year) }.to_not raise_error
@@ -169,12 +172,43 @@ describe ConfiguredTasksService do
       allow(reader).to receive(:configured_task_templates).and_return(
         'Holiday' => { 'Holiday' => ['{{CONTENT}}'] }
       )
+      allow(reader).to receive(:tag_order).and_return([])
       allow(ConfigReaderService).to receive(:new).and_return(reader)
 
       @tag_service.add_configured_tasks(@year)
 
       day = @year.days.find { |d| d.year == 2020 && d.month == 1 && d.month_day == 1 }
       expect(day.tasks.scan('Holiday(').size).to eq(1)
+    end
+  end
+
+  context 'given a configured tag order' do
+    it 'renders roots in the configured order' do
+      holiday = {
+        ConfigConstants::KEYS[:METHOD] => 'to_specific_date',
+        ConfigConstants::KEYS[:TEMPLATE] => 'Holiday',
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 1
+      }
+      body = {
+        ConfigConstants::KEYS[:METHOD] => 'to_specific_date',
+        ConfigConstants::KEYS[:TEMPLATE] => 'Body',
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 1
+      }
+      reader = double('ConfigReaderService')
+      allow(reader).to receive(:configured_tasks).and_return('Holiday_Task' => holiday, 'Body_Task' => body)
+      allow(reader).to receive(:configured_task_templates).and_return(
+        'Holiday' => ['Holiday'],
+        'Body' => ['Body']
+      )
+      allow(reader).to receive(:tag_order).and_return(['Holiday', '~~OTHER~~', 'Body'])
+      allow(ConfigReaderService).to receive(:new).and_return(reader)
+
+      blank_year = Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH])
+
+      day = blank_year.days.find { |d| d.year == 2020 && d.month == 1 && d.month_day == 1 }
+      expect(day.tasks).to eq("Holiday,\nBody,\n")
     end
   end
 end

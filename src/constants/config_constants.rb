@@ -3,6 +3,7 @@ module ConfigConstants
     TASKS: 'tasks_config',
     TASK_TEMPLATES: 'task_templates_config',
     LG_TEMPLATES: 'lg_templates_config',
+    TAG_ORDER: 'tag_order_config',
     LG_TEMPLATE_BASE: 'base',
     LG_TEMPLATE_WEEKDAY: 'weekday',
     LG_TEMPLATE_WEEKEND: 'weekend',
@@ -21,6 +22,8 @@ module ConfigConstants
     EVEN_ONLY?: 'even_only',
     ODD_ONLY?: 'odd_only',
   }.freeze
+
+  TAG_ORDER_MARKER = '~~OTHER~~'.freeze
 
   PLACEHOLDERS = {
     TEMPLATE_START: '{{',

@@ -4,6 +4,10 @@ require_relative '../constants/app_constants'
 require_relative './tag_merge_service'
 
 class AddTaskService
+  def initialize(tag_order = [])
+    @tag_order = tag_order
+  end
+
   def to_specific_date(do_year, config)
     month = config[ConfigConstants::KEYS[:MONTH]]
     month_day = config[ConfigConstants::KEYS[:DAY]]
@@ -18,8 +22,7 @@ class AddTaskService
   end
 
   def to_each_day(do_year, config)
-    day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year)
@@ -28,9 +31,7 @@ class AddTaskService
   end
 
   def to_each_weekday(do_year, config)
-    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
-      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-    end
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year) if Year::WEEKDAY_DAY_NAMES.include?(day.name)
@@ -39,9 +40,7 @@ class AddTaskService
   end
 
   def to_each_weekend(do_year, config)
-    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
-      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-    end
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year) if Year::WEEKEND_DAY_NAMES.include?(day.name)
@@ -198,9 +197,16 @@ class AddTaskService
 
   private
 
+  def raise_if_day_name_present!(config)
+    return unless config.key?(ConfigConstants::KEYS[:DAY_NAME])
+
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+  end
+
   def attach(day, config, do_year)
     incoming = TagMergeService.canonical_roots(config[ConfigConstants::KEYS[:TAG]])
     day.tag_roots = TagMergeService.add_roots(day.tag_roots, incoming)
+    day.tag_roots = TagMergeService.order_roots(day.tag_roots, @tag_order)
     day.tasks = TagMergeService.render(day.tag_roots, do_year.config_file)
   end
 
