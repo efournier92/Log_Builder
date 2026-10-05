@@ -564,6 +564,30 @@ tasks_config:
       - '{{NAME}}': NewYears_Eve
 ```
 
+### Same-Day Tag Merging
+
+When two configured tasks render a root tag with the same name on the same day, the tags merge into one root. Merging is always on and silent.
+
+- Merging is recursive: same-named internal nodes merge at each level, and identical leaves collapse.
+- Incoming children are placed before existing children at each merged level.
+- The merged root stays in the slot of its lowest occurrence, so tags below it do not move.
+- Tags that do not collide render exactly as before.
+- When an internal tag and a leaf tag share a name, the internal tag is kept and the leaf becomes its first child.
+
+For example, four `Body` contributions on one day collapse into a single `Body`:
+
+```text
+Body(
+  Ears(
+    Drops_Apply,
+    Camera_Wax_Remove,
+  ),
+  Vitamins_Take(
+    Pills,
+  ),
+),
+```
+
 ### Birthdays
 
 ```yaml
@@ -599,7 +623,6 @@ Birthday_AbeLincoln:
 - [X] Address LG mode.
   - [X] Config driven.
   - [X] Add example to README.
-- [ ] Overwrite same-named tags for a day.
 - [ ] Warn of duplicate keys in YAML.
 - [ ] Add begin/rescue blocks to all YAML-related methods.
   - [ ] Warn user of improper configuration.

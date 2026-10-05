@@ -1,0 +1,49 @@
+lg_templates_config:
+  base:
+    - ""
+    - "### Do"
+    - ""
+    - "```text"
+    - "```"
+task_templates_config:
+  Body_Ears_Drops:
+    Body:
+      Ears:
+        - Drops_Apply
+  Body_Ears_Clean:
+    Body:
+      Ears:
+        - Drops_Apply
+        - Camera_Wax_Remove
+  Body_Vitamins:
+    Body:
+      Vitamins_Take:
+        - Pills
+  Zeta_Template:
+    - Zeta
+tasks_config:
+  Body_Ears_Drops_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Body_Ears_Drops
+  Body_Ears_Drops_Task_2:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Body_Ears_Drops
+  Body_Ears_Clean_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Body_Ears_Clean
+  Body_Vitamins_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Body_Vitamins
+  Zeta_Task:
+    method: to_specific_date
+    month: 1
+    day: 1
+    template: Zeta_Template

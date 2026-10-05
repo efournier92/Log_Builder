@@ -4,6 +4,14 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-04 | [outcome] | services | Fixed the merge render perf trap by deferring ConfigReaderService construction in TaskPrinterService#print_internal into the placeholder branch (it was built for every internal node); padded 154KB config with a daily internal task went 8.9s to 0.11s, full suite 3.77s to 0.80s, and a placeholder-bearing daily task stays 0.10s; also froze canonical children arrays and tightened the collision e2e to exact-match | src/services/task_printer_service.rb:44; src/services/tag_merge_service.rb:93
+
+- 2026-10-04 | [trap] | services | TagMergeService.render builds a fresh TaskPrinterService per root and print_internal lazily YAML.load_file per printer, so a large config with a frequent internal task re-parses the file once per root per day; measured 8.9s vs ~0.04s pre-merge on a 154KB padded config with one to_each_day internal task; superseded 2026-10-04 | src/services/tag_merge_service.rb:65; src/services/task_printer_service.rb:43
+
+- 2026-10-04 | [outcome] | services | Implemented same-day root tag merging per the spec: TagMergeService builds canonical trees and merges same-named roots recursively with incoming-first children and exact-leaf dedupe, rendering each root through a fresh TaskPrinterService; AddTaskService#attach keeps per-day tag_roots independent; four preexisting collision-day assertions in configured_tasks_service_spec were updated to post-merge output as the e2e note requires; full suite 259 examples 0 failures, rubocop 0 offenses | src/services/tag_merge_service.rb:1; test/spec/services/tag_merge_service_spec.rb:1
+
+- 2026-10-04 | [decision] | services | Same-day root tags merge by exact name: incoming children prepended, recursive with exact-leaf dedupe, merged root keeps its bottom-most occurrence slot, internal beats leaf with the leaf kept as a child, always-on and silent; structured trees per day rendered through the existing printer | docs/specs/2026-10-04_MergeSameDayRootTags.md
+
 - 2026-10-04 | [outcome] | repo | Corrected the history-leak premise: 7 subjects match the leak keywords (9 widened), not about 470; the author email spans 630 commits from 2017 to 2026 | `git log --all --grep=laundry --grep=gym --grep=rent --grep=billing --grep=appointment --format='%s'`; `git rev-list --all --count` -> 631
 - 2026-10-04 | [outcome] | repo | Squash-merged the loop branch into `master` as one sentence-case commit and pushed; `agent-refactor` deleted local and remote | `git log --oneline -1 master` -> `59769f1`
 - 2026-10-04 | [decision] | repo | Defer commit-history cleanup for now; no rewrite performed. Revisit with the critic findings: 7 leaking subjects, and the remote dependabot branch plus open PR #2 must be handled | docs/privacy/history-cleanup.md
