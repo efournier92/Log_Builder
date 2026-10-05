@@ -218,11 +218,6 @@ context 'User configures a root tag order' do
                "Body(\n  Body_Detail,\n),"
     expect(@do_hash['2020-01-01']).to eq(expected)
   end
-
-  it 'sorts a later daily Body task below a once-a-year Holiday' do
-    expect(@do_hash['2020-01-01']).to match(/```text\nHoliday\(/)
-    expect(@do_hash['2020-01-01']).to end_with("Body(\n  Body_Detail,\n),")
-  end
 end
 
 context 'User schedules tasks for each weekday and weekend' do

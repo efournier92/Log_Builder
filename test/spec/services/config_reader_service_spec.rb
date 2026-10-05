@@ -101,6 +101,15 @@ describe ConfigReaderService do
       end
     end
 
+    context 'given a non-list value' do
+      it 'returns it unchanged for later validation' do
+        allow(YAML).to receive(:load_file).and_return(ConfigConstants::KEYS[:TAG_ORDER] => false)
+        reader = ConfigReaderService.new(TestConstants::CONFIG_FILES[:TEST_PATH])
+
+        expect(reader.tag_order).to be(false)
+      end
+    end
+
     context 'given a config that does not define tag_order_config' do
       it 'returns an empty array' do
         expect(@config_reader.tag_order).to eq([])

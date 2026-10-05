@@ -41,6 +41,17 @@ describe AddTaskService do
       )
     end
 
+    it 'raises an error for a present but nil day name' do
+      config = {
+        ConfigConstants::KEYS[:DAY_NAME] => nil,
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
+      }
+
+      expect { @service.to_each_day(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], nil)
+      )
+    end
+
     it 'adds a configured tag to every day' do
       tag = 'Test_Tag'
       config = { ConfigConstants::KEYS[:TAG] => tag }
@@ -1113,42 +1124,33 @@ describe AddTaskService do
 
   describe 'tag order' do
     let(:ordered_service) { AddTaskService.new(['Holiday', '~~OTHER~~', 'Body']) }
+    let(:holiday) do
+      { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1, ConfigConstants::KEYS[:TAG] => 'Holiday' }
+    end
+    let(:body) do
+      { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1, ConfigConstants::KEYS[:TAG] => 'Body' }
+    end
 
-    it 'orders roots by the configured list after attaching' do
-      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-               ConfigConstants::KEYS[:TAG] => 'Body' }
-      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
-
-      ordered_service.to_specific_date(@do_year, body)
+    it 'moves a later-attached root into its ordered slot instead of the top' do
       ordered_service.to_specific_date(@do_year, holiday)
+      ordered_service.to_specific_date(@do_year, body)
       day = get_day_from_year(@do_year, @year, 1, 1)
 
       expect(day.tag_roots.map { |node| node[:name] }).to eq(%w[Holiday Body])
     end
 
-    it 'lands a root attached later in its ordered slot rather than on top' do
-      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-               ConfigConstants::KEYS[:TAG] => 'Body' }
-      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
-
-      ordered_service.to_specific_date(@do_year, body)
-      ordered_service.to_specific_date(@do_year, holiday)
+    it 'puts the later-attached root on top when no order is configured' do
+      plain_service = AddTaskService.new
+      plain_service.to_specific_date(@do_year, holiday)
+      plain_service.to_specific_date(@do_year, body)
       day = get_day_from_year(@do_year, @year, 1, 1)
 
-      expect(day.tag_roots.first[:name]).to eq('Holiday')
-      expect(day.tag_roots.last[:name]).to eq('Body')
+      expect(day.tag_roots.map { |node| node[:name] }).to eq(%w[Body Holiday])
     end
 
     it 'renders the day in the ordered root order' do
-      body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-               ConfigConstants::KEYS[:TAG] => 'Body' }
-      holiday = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,
-                  ConfigConstants::KEYS[:TAG] => 'Holiday' }
-
-      ordered_service.to_specific_date(@do_year, body)
       ordered_service.to_specific_date(@do_year, holiday)
+      ordered_service.to_specific_date(@do_year, body)
       day = get_day_from_year(@do_year, @year, 1, 1)
 
       expect(day.tasks).to eq("Holiday,\nBody,\n")

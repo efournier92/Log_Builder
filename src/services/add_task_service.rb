@@ -22,9 +22,7 @@ class AddTaskService
   end
 
   def to_each_day(do_year, config)
-    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
-      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-    end
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year)
@@ -33,9 +31,7 @@ class AddTaskService
   end
 
   def to_each_weekday(do_year, config)
-    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
-      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-    end
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year) if Year::WEEKDAY_DAY_NAMES.include?(day.name)
@@ -44,9 +40,7 @@ class AddTaskService
   end
 
   def to_each_weekend(do_year, config)
-    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
-      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
-    end
+    raise_if_day_name_present!(config)
 
     do_year.days.each do |day|
       attach(day, config, do_year) if Year::WEEKEND_DAY_NAMES.include?(day.name)
@@ -202,6 +196,12 @@ class AddTaskService
   end
 
   private
+
+  def raise_if_day_name_present!(config)
+    return unless config.key?(ConfigConstants::KEYS[:DAY_NAME])
+
+    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+  end
 
   def attach(day, config, do_year)
     incoming = TagMergeService.canonical_roots(config[ConfigConstants::KEYS[:TAG]])

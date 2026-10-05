@@ -29,7 +29,7 @@ class TagMergeService
     return roots if tag_order.empty?
 
     positions = {}
-    default_rank = tag_order.length
+    unlisted_rank = tag_order.length
     tag_order.each_with_index do |entry, index|
       unless entry.is_a?(String)
         raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config entries must be strings')
@@ -39,11 +39,11 @@ class TagMergeService
       end
 
       positions[entry] = index
-      default_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
+      unlisted_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
     end
 
     roots.each_with_index
-         .sort_by { |node, index| [positions.fetch(node[:name], default_rank), index] }
+         .sort_by { |node, index| [positions.fetch(node[:name], unlisted_rank), index] }
          .map(&:first)
   end
 

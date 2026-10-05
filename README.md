@@ -631,6 +631,7 @@ Root tags render in the order of the optional top-level `tag_order_config` list,
 - Without `'~~OTHER~~'`, unlisted tags render after all listed tags.
 - Tags that share a position keep their existing relative order.
 - Omit the key, or leave it empty, to render exactly as before.
+- A configured root tag named `~~OTHER~~` is reserved and raises an `INVALID_CONFIG` error, even when `tag_order_config` is absent.
 
 ```yaml
 tag_order_config:
@@ -664,6 +665,8 @@ Birthday_AbeLincoln:
   - `to_each_weekday` attaches a task to every Monday through Friday.
   - `to_each_weekend` attaches a task to every Saturday and Sunday.
   - Both ignore `odd_only` and `even_only`, and reject a supplied `day_name`.
+- Adds optional `tag_order_config` root tag ordering, applied after same-day merging, with the reserved `~~OTHER~~` marker for unlisted tags, and a raise when a configured tag uses the reserved marker name.
+- Changes `to_each_day` to reject a supplied `day_name` (valid or not), matching `to_each_weekday` and `to_each_weekend`.
 
 ### 2024-05-01
 

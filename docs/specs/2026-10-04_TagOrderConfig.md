@@ -38,7 +38,7 @@ Full definitions live in `docs/GLOSSARY.md`. The load-bearing terms for this spe
 - Render root tags in list order, from the first entry to the last.
 - Provide a `~~OTHER~~` marker entry that gives the position of every root tag not named in the list.
 - Keep the relative order of root tags that share a position (all unlisted tags at the marker, and all tags when no list applies) unchanged.
-- Preserve the current rendered output byte for byte when `tag_order_config` is absent or empty.
+- Preserve the current rendered output byte for byte when `tag_order_config` is absent or empty, with the reserved-marker raise as the one exception.
 - Keep tag merging by exact name unchanged; apply order after merging.
 - Raise a clear configuration error for a malformed list so a typo does not fail silently.
 
@@ -153,7 +153,7 @@ def self.order_roots(roots, tag_order)
   return roots if tag_order.empty?
 
   positions = {}
-  default_rank = tag_order.length
+  unlisted_rank = tag_order.length
   tag_order.each_with_index do |entry, index|
     unless entry.is_a?(String)
       raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config entries must be strings')
@@ -163,11 +163,11 @@ def self.order_roots(roots, tag_order)
     end
 
     positions[entry] = index
-    default_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
+    unlisted_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
   end
 
   roots.each_with_index
-       .sort_by { |node, index| [positions.fetch(node[:name], default_rank), index] }
+       .sort_by { |node, index| [positions.fetch(node[:name], unlisted_rank), index] }
        .map(&:first)
 end
 ```
@@ -316,8 +316,8 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 ### `test/spec/services/add_task_service_spec.rb`
 
 - Existing `AddTaskService.new` with no arguments keeps all current order assertions green, including the merge cases at `:1049-1105`.
-- New: constructing `AddTaskService.new(['Holiday', '~~OTHER~~', 'Body'])` and attaching a `Body` root then a `Holiday` root yields `day.tag_roots` names `%w[Holiday Body]`.
-- New: a root attached by a later schedule lands in its ordered slot rather than at the top. Attach `Body` first, then `Holiday`, with the order above, and assert `day.tag_roots.first[:name] == 'Holiday'` and `day.tag_roots.last[:name] == 'Body'`.
+- New: constructing `AddTaskService.new(['Holiday', '~~OTHER~~', 'Body'])` and attaching a `Holiday` root then a `Body` root yields `day.tag_roots` names `%w[Holiday Body]`, so ordering is required to keep `Body` at the bottom rather than insertion order.
+- New: with no order configured, attaching `Holiday` first and `Body` second leaves the later `Body` root on top, yielding `%w[Body Holiday]`.
 - New: `day.tasks` reflects the ordered render for a two-root day.
 
 ### `test/spec/services/configured_tasks_service_spec.rb`
