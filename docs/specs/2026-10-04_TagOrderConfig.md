@@ -18,7 +18,7 @@ Full definitions live in `docs/GLOSSARY.md`. The load-bearing terms for this spe
 - **Root tag**: a tag at the top level of a day's list, not nested.
 - **Canonical tag node**: the merge-time shape `{ name:, leaf:, children: }`.
 - **Tag order**: the configured sequence in `tag_order_config` that fixes root tag positions.
-- **`~OTHER~` marker**: the reserved list entry that marks where every tag not named in the list renders.
+- **`~~OTHER~~` marker**: the reserved list entry that marks where every tag not named in the list renders.
 
 ## Current State
 
@@ -36,7 +36,7 @@ Full definitions live in `docs/GLOSSARY.md`. The load-bearing terms for this spe
 
 - Add an optional top-level `tag_order_config` list that fixes the order of root tags within every day.
 - Render root tags in list order, from the first entry to the last.
-- Provide a `~OTHER~` marker entry that gives the position of every root tag not named in the list.
+- Provide a `~~OTHER~~` marker entry that gives the position of every root tag not named in the list.
 - Keep the relative order of root tags that share a position (all unlisted tags at the marker, and all tags when no list applies) unchanged.
 - Preserve the current rendered output byte for byte when `tag_order_config` is absent or empty.
 - Keep tag merging by exact name unchanged; apply order after merging.
@@ -97,12 +97,12 @@ tag_order_config:
   - Holiday
   - Birthday
   - Career
-  - '~OTHER~'
+  - '~~OTHER~~'
   - Body
 ```
 
 - The value is a YAML list of strings, top entry first.
-- `~OTHER~` is the reserved marker entry; quote it in YAML as `'~OTHER~'`.
+- `~~OTHER~~` is the reserved marker entry; quote it in YAML as `'~~OTHER~~'`.
 - The key may be absent, and that is the default. Absent or empty means no ordering.
 - Unknown top-level keys stay ignored as they are today; this key is read only for ordering.
 
@@ -112,6 +112,12 @@ Add one key at `src/constants/config_constants.rb:2-23`, after `LG_TEMPLATES:` a
 
 ```ruby
 TAG_ORDER: 'tag_order_config',
+```
+
+Add the reserved-name marker after the `KEYS` hash at `src/constants/config_constants.rb:23`:
+
+```ruby
+TAG_ORDER_MARKER = '~~OTHER~~'.freeze
 ```
 
 No error constant is added. Ordering errors reuse `ConfigConstants::ERRORS[:INVALID_CONFIG]` at `src/constants/config_constants.rb:44-48`.
@@ -131,18 +137,17 @@ end
 
 ### `TagMergeService#order_roots`
 
-Add a marker constant near the top of `src/services/tag_merge_service.rb` (after the class opening at line 3):
-
-```ruby
-OTHER_MARKER = '~OTHER~'.freeze
-```
-
 Add `require_relative '../constants/config_constants'` near the existing `require_relative '../services/task_printer_service'` at line 1.
 
-Add the pure ordering method after `canonical_roots` (`src/services/tag_merge_service.rb:12-16`):
+Add the pure ordering method after `canonical_roots` (`src/services/tag_merge_service.rb:12-16`), using the shared `ConfigConstants::TAG_ORDER_MARKER`:
 
 ```ruby
 def self.order_roots(roots, tag_order)
+  if roots.any? { |node| node[:name] == ConfigConstants::TAG_ORDER_MARKER }
+    raise format(ConfigConstants::ERRORS[:INVALID_CONFIG],
+                 "tag name is reserved: #{ConfigConstants::TAG_ORDER_MARKER}")
+  end
+
   return roots if tag_order.nil?
   raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config must be a list') unless tag_order.is_a?(Array)
   return roots if tag_order.empty?
@@ -158,7 +163,7 @@ def self.order_roots(roots, tag_order)
     end
 
     positions[entry] = index
-    default_rank = index if entry == OTHER_MARKER
+    default_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
   end
 
   roots.each_with_index
@@ -170,8 +175,8 @@ end
 - Rank rule: a listed root takes the index of its entry; an unlisted root takes the marker index, or `tag_order.length` (after the last entry) when the marker is absent.
 - The `index` tiebreak makes the sort stable: roots with equal rank keep their current order in `roots`.
 - For a non-empty list the method returns a new array; for a `nil` or empty list it returns `roots` unchanged. It never mutates `roots` or any node. Frozen nodes are read only.
-- An entry equal to `~OTHER~` occupies a position like any other entry and is recorded in `positions` for duplicate detection.
-- A tag whose name is literally `~OTHER~` cannot be distinguished from the marker. This is a documented accepted limitation.
+- An entry equal to `~~OTHER~~` occupies a position like any other entry and is recorded in `positions` for duplicate detection.
+- A root whose name equals the reserved marker is rejected: the method raises `format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag name is reserved: ~~OTHER~~')`. The collision guard runs before the `nil`, non-Array, and empty-list returns, so a configured root named the marker raises even with no order list.
 
 Validation and exact error strings, all through `format(ConfigConstants::ERRORS[:INVALID_CONFIG], <detail>)`:
 
@@ -180,6 +185,7 @@ Validation and exact error strings, all through `format(ConfigConstants::ERRORS[
 | `tag_order` present but not an Array | `tag_order_config must be a list` |
 | A non-string entry | `tag_order_config entries must be strings` |
 | A repeated string entry, including a repeated marker | `duplicate tag_order_config entry: <entry>` |
+| A root name equal to the reserved marker | `tag name is reserved: ~~OTHER~~` |
 
 ### `AddTaskService` Changes
 
@@ -273,7 +279,7 @@ Not applicable. The deliverable is a CLI and generated Markdown files. There is 
 Test-first is mandatory for every step: write the failing test, run it and capture the red result, then implement until it passes. Do not write implementation before its failing test exists.
 
 1. Add `ConfigConstants::KEYS[:TAG_ORDER]` and `ConfigReaderService#tag_order` with its spec cases, run them red then green.
-2. Add `TagMergeService::OTHER_MARKER` and `TagMergeService.order_roots` with its unit spec, run red then green.
+2. Add `ConfigConstants::TAG_ORDER_MARKER` and `TagMergeService.order_roots` with its unit spec, run red then green.
 3. Add `AddTaskService#initialize(tag_order = [])` and the `order_roots` call in `attach`, with integration cases, run red then green.
 4. Wire `ConfiguredTasksService`, add `tag_order` stubs to the non-nil doubles, run the full suite.
 5. Add the `test/tag_order_config.yml` fixture, its `ORDER_PATH` constant, and the e2e case, run the full suite.
@@ -291,7 +297,7 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 
 - Returns the input unchanged for a `nil` list.
 - Returns the input unchanged for an empty list.
-- Places a listed root at its list index, for example `[Body, Alpha]` with `[Alpha, '~OTHER~', Body]` becomes `Alpha, Body`.
+- Places a listed root at its list index, for example `[Body, Alpha]` with `[Alpha, '~~OTHER~~', Body]` becomes `Alpha, Body`.
 - Places an unlisted root at the marker index between two listed roots.
 - Puts all unlisted roots at the marker position and keeps their incoming relative order, for example `[Alpha, Zeta]` with marker before `Body` stays `Alpha, Zeta`.
 - Puts unlisted roots after all listed roots when the marker is absent, for example `[Zeta, Alpha]` with `[Holiday, Body]` becomes `Holiday, Body, Zeta, Alpha`.
@@ -303,13 +309,14 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 - Raises `format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config must be a list')` for a non-Array value such as a Hash.
 - Raises `format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config entries must be strings')` for a non-string entry such as a nested Array or an Integer.
 - Raises `format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'duplicate tag_order_config entry: Holiday')` for a repeated tag name.
-- Raises the duplicate error for a repeated `~OTHER~` marker.
+- Raises the duplicate error for a repeated `~~OTHER~~` marker.
+- Raises `format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag name is reserved: ~~OTHER~~')` when a root is named the reserved marker, including with an empty order list.
 - Integration: after `add_roots` merges two same-named roots, `order_roots` places the merged root in its ordered slot.
 
 ### `test/spec/services/add_task_service_spec.rb`
 
 - Existing `AddTaskService.new` with no arguments keeps all current order assertions green, including the merge cases at `:1049-1105`.
-- New: constructing `AddTaskService.new(['Holiday', '~OTHER~', 'Body'])` and attaching a `Body` root then a `Holiday` root yields `day.tag_roots` names `%w[Holiday Body]`.
+- New: constructing `AddTaskService.new(['Holiday', '~~OTHER~~', 'Body'])` and attaching a `Body` root then a `Holiday` root yields `day.tag_roots` names `%w[Holiday Body]`.
 - New: a root attached by a later schedule lands in its ordered slot rather than at the top. Attach `Body` first, then `Holiday`, with the order above, and assert `day.tag_roots.first[:name] == 'Holiday'` and `day.tag_roots.last[:name] == 'Body'`.
 - New: `day.tasks` reflects the ordered render for a two-root day.
 
@@ -317,7 +324,7 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 
 - Add `allow(reader).to receive(:tag_order).and_return([])` to the non-nil doubles at the `Every_2_Weeks` context (`:99-106`), the canonical-roots context (`:125-130`), the missing-template context (`:146-149`), and the two-task merge context (`:167-172`).
 - The early-return context at `:84-89` needs no change; its double returns `configured_tasks: nil` and the read happens below the guard.
-- New: a config whose reader reports `tag_order = ['Holiday', '~OTHER~', 'Body']` renders a `Body`-then-`Holiday` task pair as `Holiday` then `Body` in `day.tasks`.
+- New: a config whose reader reports `tag_order = ['Holiday', '~~OTHER~~', 'Body']` renders a `Body`-then-`Holiday` task pair as `Holiday` then `Body` in `day.tasks`.
 - Existing rendered-string assertions at `:38,44,58,65,79-80,111,136,177` stay green because `test_config.yml` has no `tag_order_config`.
 
 ### `test/e2e/e2e_spec.rb`
@@ -379,12 +386,11 @@ tag_order_config:
   - Holiday
   - Birthday
   - Career
-  - '~OTHER~'
+  - '~~OTHER~~'
   - Body
 tasks_config:
   Body_Task:
     method: to_each_day
-    day_name: Monday
     template: Body_Template
   Holiday_Task:
     method: to_specific_date
@@ -429,7 +435,7 @@ The fixture attaches `Body` last, so without `tag_order_config` `Body` renders o
 
 - [ ] `ConfigConstants::KEYS[:TAG_ORDER]` added as `tag_order_config`.
 - [ ] `ConfigReaderService#tag_order` added, defaulting to `[]`.
-- [ ] `TagMergeService::OTHER_MARKER` (`~OTHER~`) and pure `TagMergeService.order_roots` added with stable ties and the three validation errors.
+- [ ] `ConfigConstants::TAG_ORDER_MARKER` (`~~OTHER~~`) and pure `TagMergeService.order_roots` added with stable ties, the three validation errors, and the reserved-root-name guard.
 - [ ] `AddTaskService#initialize(tag_order = [])` added and `attach` applies `order_roots` after `add_roots`.
 - [ ] `ConfiguredTasksService` reads `reader.tag_order` after the nil guard and injects it into `AddTaskService`.
 - [ ] `Day`, `PrinterService`, and `TaskPrinterService` unchanged; `day.tasks` stays the rendered string.

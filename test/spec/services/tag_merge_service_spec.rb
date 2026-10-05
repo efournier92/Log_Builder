@@ -83,7 +83,7 @@ describe TagMergeService do
     it 'places a listed root at its list index' do
       roots = [leaf_node('Body'), leaf_node('Alpha')]
 
-      result = TagMergeService.order_roots(roots, ['Alpha', '~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['Alpha', '~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Alpha Body])
     end
@@ -91,7 +91,7 @@ describe TagMergeService do
     it 'places an unlisted root at the marker index between two listed roots' do
       roots = [leaf_node('Body'), leaf_node('Zeta'), leaf_node('Alpha')]
 
-      result = TagMergeService.order_roots(roots, ['Alpha', '~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['Alpha', '~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Alpha Zeta Body])
     end
@@ -99,7 +99,7 @@ describe TagMergeService do
     it 'keeps the incoming relative order of all unlisted roots at the marker' do
       roots = [leaf_node('Alpha'), leaf_node('Zeta')]
 
-      result = TagMergeService.order_roots(roots, ['~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Alpha Zeta])
     end
@@ -115,7 +115,7 @@ describe TagMergeService do
     it 'puts unlisted roots before all listed roots when the marker is first' do
       roots = [leaf_node('Body'), leaf_node('Zeta'), leaf_node('Alpha')]
 
-      result = TagMergeService.order_roots(roots, ['~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Zeta Alpha Body])
     end
@@ -123,7 +123,7 @@ describe TagMergeService do
     it 'advances listed roots that appear after the marker past the unlisted block' do
       roots = [leaf_node('Zeta'), leaf_node('Body'), leaf_node('Alpha')]
 
-      result = TagMergeService.order_roots(roots, ['~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Zeta Alpha Body])
     end
@@ -131,14 +131,14 @@ describe TagMergeService do
     it 'ignores a listed tag that is absent from the roots' do
       roots = [leaf_node('Alpha'), leaf_node('Body')]
 
-      result = TagMergeService.order_roots(roots, ['Holiday', '~OTHER~', 'Body'])
+      result = TagMergeService.order_roots(roots, ['Holiday', '~~OTHER~~', 'Body'])
 
       expect(names(result)).to eq(%w[Alpha Body])
     end
 
     it 'is idempotent' do
       roots = [leaf_node('Body'), leaf_node('Zeta'), leaf_node('Holiday')]
-      order = ['Holiday', '~OTHER~', 'Body']
+      order = ['Holiday', '~~OTHER~~', 'Body']
 
       once = TagMergeService.order_roots(roots, order)
       twice = TagMergeService.order_roots(once, order)
@@ -150,7 +150,7 @@ describe TagMergeService do
       roots = [leaf_node('Body'), leaf_node('Zeta'), leaf_node('Holiday')]
       snapshot = Marshal.load(Marshal.dump(roots))
 
-      TagMergeService.order_roots(roots, ['Holiday', '~OTHER~', 'Body'])
+      TagMergeService.order_roots(roots, ['Holiday', '~~OTHER~~', 'Body'])
 
       expect(roots).to eq(snapshot)
     end
@@ -180,16 +180,25 @@ describe TagMergeService do
     end
 
     it 'raises on a repeated marker' do
-      expect { TagMergeService.order_roots([leaf_node('Alpha')], ['~OTHER~', '~OTHER~']) }.to raise_error(
-        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'duplicate tag_order_config entry: ~OTHER~')
+      expect { TagMergeService.order_roots([leaf_node('Alpha')], ['~~OTHER~~', '~~OTHER~~']) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'duplicate tag_order_config entry: ~~OTHER~~')
       )
+    end
+
+    it 'raises when a root name is the reserved marker' do
+      roots = [leaf_node(ConfigConstants::TAG_ORDER_MARKER)]
+      error = format(ConfigConstants::ERRORS[:INVALID_CONFIG],
+                     "tag name is reserved: #{ConfigConstants::TAG_ORDER_MARKER}")
+
+      expect { TagMergeService.order_roots(roots, ['Alpha', ConfigConstants::TAG_ORDER_MARKER]) }.to raise_error(error)
+      expect { TagMergeService.order_roots(roots, []) }.to raise_error(error)
     end
 
     it 'places a merged root in its ordered slot after add_roots' do
       roots = TagMergeService.add_roots([], [leaf_node('Holiday'), leaf_node('Body')])
       roots = TagMergeService.add_roots(roots, [leaf_node('Holiday')])
 
-      result = TagMergeService.order_roots(roots, ['Body', '~OTHER~', 'Holiday'])
+      result = TagMergeService.order_roots(roots, ['Body', '~~OTHER~~', 'Holiday'])
 
       expect(names(result)).to eq(%w[Body Holiday])
     end

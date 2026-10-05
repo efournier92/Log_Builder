@@ -22,8 +22,9 @@ class AddTaskService
   end
 
   def to_each_day(do_year, config)
-    day_name = config[ConfigConstants::KEYS[:DAY_NAME]]
-    raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], day_name) unless Year.valid_day_name?(day_name)
+    if config.key?(ConfigConstants::KEYS[:DAY_NAME])
+      raise format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+    end
 
     do_year.days.each do |day|
       attach(day, config, do_year)

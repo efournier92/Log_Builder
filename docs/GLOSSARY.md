@@ -32,4 +32,4 @@ The nested structure a task printer consumes and renders, made of hashes and arr
 
 **Tag Order**
 
-The configured sequence in `tag_order_config` that fixes the position of root tags within a day: a listed tag takes its list position, and the `~OTHER~` marker gives the position of every tag not named in the list. _Avoid_: tag weight, priority, rank.
+The configured sequence in `tag_order_config` that fixes the position of root tags within a day: a listed tag takes its list position, and the `~~OTHER~~` marker gives the position of every tag not named in the list. _Avoid_: tag weight, priority, rank.

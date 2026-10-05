@@ -23,6 +23,8 @@ module ConfigConstants
     ODD_ONLY?: 'odd_only',
   }.freeze
 
+  TAG_ORDER_MARKER = '~~OTHER~~'.freeze
+
   PLACEHOLDERS = {
     TEMPLATE_START: '{{',
     TEMPLATE_END: '}}',

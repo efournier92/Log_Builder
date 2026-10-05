@@ -97,7 +97,7 @@ describe ConfigReaderService do
       it 'returns the configured list' do
         reader = ConfigReaderService.new(TestConstants::CONFIG_FILES[:ORDER_PATH])
 
-        expect(reader.tag_order).to eq(%w[Holiday Birthday Career ~OTHER~ Body])
+        expect(reader.tag_order).to eq(%w[Holiday Birthday Career ~~OTHER~~ Body])
       end
     end
 

@@ -202,7 +202,7 @@ describe ConfiguredTasksService do
         'Holiday' => ['Holiday'],
         'Body' => ['Body']
       )
-      allow(reader).to receive(:tag_order).and_return(['Holiday', '~OTHER~', 'Body'])
+      allow(reader).to receive(:tag_order).and_return(['Holiday', '~~OTHER~~', 'Body'])
       allow(ConfigReaderService).to receive(:new).and_return(reader)
 
       blank_year = Year.new(2020, TestConstants::CONFIG_FILES[:BLANK_PATH])

@@ -26,12 +26,11 @@ tag_order_config:
   - Holiday
   - Birthday
   - Career
-  - '~OTHER~'
+  - '~~OTHER~~'
   - Body
 tasks_config:
   Body_Task:
     method: to_each_day
-    day_name: Monday
     template: Body_Template
   Holiday_Task:
     method: to_specific_date

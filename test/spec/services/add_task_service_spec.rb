@@ -30,12 +30,20 @@ describe AddTaskService do
       )
     end
 
-    it 'adds a configured tag to every day' do
-      tag = 'Test_Tag'
+    it 'raises an error for a valid day name' do
       config = {
         ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
-        ConfigConstants::KEYS[:TAG] => tag
+        ConfigConstants::KEYS[:TAG] => 'Test_Tag'
       }
+
+      expect { @service.to_each_day(@do_year, config) }.to raise_error(
+        format(ConfigConstants::ERRORS[:INVALID_DAY_NAME], config[ConfigConstants::KEYS[:DAY_NAME]])
+      )
+    end
+
+    it 'adds a configured tag to every day' do
+      tag = 'Test_Tag'
+      config = { ConfigConstants::KEYS[:TAG] => tag }
 
       do_year = @service.to_each_day(@do_year, config)
 
@@ -1082,10 +1090,7 @@ describe AddTaskService do
 
     it 'keeps each day independent when the same config attaches to many days' do
       tag = TagMergeService.roots_from_template('Body' => { 'Ears' => ['Drops'] })
-      config = {
-        ConfigConstants::KEYS[:DAY_NAME] => 'Monday',
-        ConfigConstants::KEYS[:TAG] => tag
-      }
+      config = { ConfigConstants::KEYS[:TAG] => tag }
 
       @service.to_each_day(@do_year, config)
 
@@ -1107,7 +1112,7 @@ describe AddTaskService do
   end
 
   describe 'tag order' do
-    let(:ordered_service) { AddTaskService.new(['Holiday', '~OTHER~', 'Body']) }
+    let(:ordered_service) { AddTaskService.new(['Holiday', '~~OTHER~~', 'Body']) }
 
     it 'orders roots by the configured list after attaching' do
       body = { ConfigConstants::KEYS[:MONTH] => 1, ConfigConstants::KEYS[:DAY] => 1,

@@ -284,11 +284,10 @@ Christmas:
 ```yaml
 Daily_Journal:
   method: to_each_day
-  day_name: Monday
   template: Code_Daily
 ```
 
-The `day_name` key is required by the method but does not affect the schedule; any valid day name satisfies it.
+`day_name` is not accepted; the method attaches to every day, and supplying a `day_name` (valid or not) raises an `INVALID_DAY_NAME` error.
 
 ##### `to_each_xday`
 
@@ -628,8 +627,8 @@ Root tags render in the order of the optional top-level `tag_order_config` list,
 
 - Tag order applies to root tags only, and it runs after same-day merging, so a merged root takes its ordered slot.
 - List the root tag names in the order you want them, first to last.
-- Use the reserved `'~OTHER~'` entry to position every tag not named in the list. Quote it in YAML.
-- Without `'~OTHER~'`, unlisted tags render after all listed tags.
+- Use the reserved `'~~OTHER~~'` entry to position every tag not named in the list. Quote it in YAML.
+- Without `'~~OTHER~~'`, unlisted tags render after all listed tags.
 - Tags that share a position keep their existing relative order.
 - Omit the key, or leave it empty, to render exactly as before.
 
@@ -638,7 +637,7 @@ tag_order_config:
   - Holiday
   - Birthday
   - Career
-  - '~OTHER~'
+  - '~~OTHER~~'
   - Body
 ```
 

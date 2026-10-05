@@ -2,8 +2,6 @@ require_relative '../services/task_printer_service'
 require_relative '../constants/config_constants'
 
 class TagMergeService
-  OTHER_MARKER = '~OTHER~'.freeze
-
   def self.roots_from_template(template)
     return [] if template.nil?
     return [to_node(template, nil)] if template.is_a?(String)
@@ -19,6 +17,11 @@ class TagMergeService
   end
 
   def self.order_roots(roots, tag_order)
+    if roots.any? { |node| node[:name] == ConfigConstants::TAG_ORDER_MARKER }
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG],
+                   "tag name is reserved: #{ConfigConstants::TAG_ORDER_MARKER}")
+    end
+
     return roots if tag_order.nil?
     unless tag_order.is_a?(Array)
       raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'tag_order_config must be a list')
@@ -36,7 +39,7 @@ class TagMergeService
       end
 
       positions[entry] = index
-      default_rank = index if entry == OTHER_MARKER
+      default_rank = index if entry == ConfigConstants::TAG_ORDER_MARKER
     end
 
     roots.each_with_index
