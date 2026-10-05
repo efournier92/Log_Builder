@@ -9,25 +9,27 @@ class FileParser
   def get_date_hash_from_do_file(file_contents)
     output = {}
 
-    next_item_exists = true
-    while next_item_exists == true
+    loop do
       next_date_line = file_contents.index(DATE_LINE_START_PATTERN)
+      break if next_date_line.nil?
 
-      next_item_exists = !next_date_line.nil?
+      next_new_line = file_contents.index(NEXT_NEW_LINE_PATTERN, next_date_line)
+      raise ArgumentError, 'Unterminated date line in DO file' if next_new_line.nil?
 
-      next_new_line = file_contents.index(NEXT_NEW_LINE_PATTERN)
-
-      next if next_date_line.nil? || next_new_line.nil?
-
-      date_line = file_contents.slice!(next_date_line, next_new_line)
+      date_line = file_contents.slice!(next_date_line, next_new_line - next_date_line)
       date = date_line.match(DATE_REGEX)
 
       date = date[0] unless date.nil? || date[0].nil?
 
       next_do_block_start = file_contents.index(DO_BLOCK_START_PATTERN)
-      next_do_block_end = file_contents.index("\n```\n\n")
+      next_do_block_end = file_contents.index(DO_BLOCK_END_PATTERN)
+      next_date_marker = file_contents.index(DATE_LINE_START_PATTERN)
 
-      do_block = file_contents.slice!(next_do_block_start, next_do_block_end)
+      raise ArgumentError, "Missing or malformed block for #{date} in DO file" if malformed_block?(
+        next_do_block_start, next_do_block_end, next_date_marker
+      )
+
+      do_block = file_contents.slice!(next_do_block_start, next_do_block_end - next_do_block_start)
       file_contents.slice!(DO_BLOCK_END_PATTERN)
 
       do_block.slice!(DO_BLOCK_CRAP_PATTERN)
@@ -58,5 +60,15 @@ class FileParser
     end
 
     output
+  end
+
+  private
+
+  def malformed_block?(block_start, block_end, next_date_marker)
+    return true if block_start.nil? || block_end.nil?
+    return true if block_end < block_start
+    return false if next_date_marker.nil?
+
+    next_date_marker < block_start || next_date_marker < block_end
   end
 end
