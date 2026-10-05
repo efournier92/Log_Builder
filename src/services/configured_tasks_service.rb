@@ -23,6 +23,8 @@ class ConfiguredTasksService
 
       template = config[ConfigConstants::KEYS[:TEMPLATE]] if template.nil?
 
+      template_variables = with_birth_year(config, method, template, template_variables, year)
+
       resolved = printer.resolve_template(template, template_variables)
       config[ConfigConstants::KEYS[:TAG]] = TagMergeService.roots_from_template(resolved)
 
@@ -30,5 +32,45 @@ class ConfiguredTasksService
     end
 
     year
+  end
+
+  private
+
+  def with_birth_year(config, method, template, template_variables, year)
+    return template_variables unless config.key?(ConfigConstants::KEYS[:BIRTH_YEAR])
+
+    birth_year = config[ConfigConstants::KEYS[:BIRTH_YEAR]]
+
+    unless method == ConfigConstants::CONFIGURED_TASK_METHODS[:SPECIFIC_DATE]
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year is only supported with to_specific_date')
+    end
+
+    unless birth_year.is_a?(Integer)
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year must be an integer')
+    end
+
+    if birth_year > year.year_number
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year cannot be in the future')
+    end
+
+    unless template_includes?(template, ConfigConstants::PLACEHOLDERS[:AGE])
+      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year requires {{AGE}} in the template')
+    end
+
+    template_variables = [] if template_variables.nil?
+    template_variables + [{ ConfigConstants::PLACEHOLDERS[:AGE] => (year.year_number - birth_year).to_s }]
+  end
+
+  def template_includes?(node, token)
+    case node
+    when Hash
+      node.any? { |key, value| template_includes?(key, token) || template_includes?(value, token) }
+    when Array
+      node.any? { |element| template_includes?(element, token) }
+    when String
+      node.include?(token)
+    else
+      false
+    end
   end
 end

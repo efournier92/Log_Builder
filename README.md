@@ -657,7 +657,36 @@ Birthday_AbeLincoln:
     - '{{CONTACT}}': honest_abe_1809@hotmail.com
 ```
 
+Add the optional `birth_year` key to print the person's age against the build year. Define a dedicated template that appends the age through `{{AGE}}`:
+
+```yaml
+Birthday_With_Age:
+  Birthday:
+    - 'Name({{NAME}},)'
+    - 'Contact({{CONTACT}},)'
+    - 'Age({{AGE}},)'
+```
+
+```yaml
+Birthday_AbeLincoln_Age:
+  method: to_specific_date
+  month: 2
+  day: 12
+  birth_year: 1809
+  template: Birthday_With_Age
+  template_variables:
+    - '{{NAME}}': AbeLincoln
+    - '{{CONTACT}}': honest_abe_1809@hotmail.com
+```
+
+The age is the build year minus `birth_year`, rendered as a plain integer. When `birth_year` is set, the template must reference `{{AGE}}` or the task raises an `INVALID_CONFIG` error.
+
 ## Version History
+
+### 2026-10-05
+
+- Adds an optional `birth_year` to `to_specific_date` tasks, rendered through the `{{AGE}}` placeholder as the build year minus the birth year.
+  - A `birth_year` on another method, a non-integer or future value, or a template without `{{AGE}}` raises an `INVALID_CONFIG` error.
 
 ### 2026-10-04
 
@@ -694,5 +723,5 @@ Birthday_AbeLincoln:
   - [ ] Do not stop running on improper configuration.
 - [ ] Validate inputs to `add_task_service`.
 - [ ] Ask user to open with VIM.
-- [ ] Calculate birthday age from year.
+- [X] Calculate birthday age from year.
 

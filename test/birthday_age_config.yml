@@ -1,0 +1,16 @@
+task_templates_config:
+  Birthday_With_Age:
+    Birthday:
+      - 'Name({{NAME}},)'
+      - 'Contact({{CONTACT}},)'
+      - 'Age({{AGE}},)'
+tasks_config:
+  Birthday_Age_Person:
+    method: to_specific_date
+    month: 1
+    day: 3
+    birth_year: 1976
+    template: Birthday_With_Age
+    template_variables:
+      - '{{NAME}}': PersonsName
+      - '{{CONTACT}}': 000-000-0000
