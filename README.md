@@ -687,6 +687,8 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 
 - Adds an optional `birth_year` to `to_specific_date` tasks, rendered through the `{{AGE}}` placeholder as the build year minus the birth year.
   - A `birth_year` on another method, a non-integer or future value, or a template without `{{AGE}}` raises an `INVALID_CONFIG` error.
+- Corrects full-year generation to include exactly the complete Monday-start weeks that intersect the target year.
+  - A normal year file now has 371 dated entries instead of 378, and a year beginning on a Monday no longer starts in the prior December; a leap year beginning on Sunday keeps 54 weeks.
 
 ### 2026-10-04
 

@@ -20,7 +20,7 @@ class Year
 
     initialize_values
 
-    54.times do
+    week_count.times do
       add_next_week
     end
 
@@ -29,13 +29,26 @@ class Year
 
   def initialize_values
     @days = []
-    @day_counter = first_monday
-    @month_counter = 12
-    @week_counter = 1
-    @day_counter = 31 - (7 - @day_counter)
-    @year_counter -= 1
-    @day_in_month_counter = @day_counter
     @days_in_months = get_days_in_months
+    @day_offset = first_monday
+    if @day_offset.zero?
+      @year_counter = @year_number
+      @month_counter = 1
+      @day_in_month_counter = 1
+    else
+      # Prior-year December day 32 - offset is the Monday opening the boundary week.
+      @year_counter = @year_number - 1
+      @month_counter = 12
+      @day_in_month_counter = 32 - @day_offset
+    end
+  end
+
+  def week_count
+    days_in_year = leap_year? ? 366 : 365
+    december_31_weekday = (@day_offset + days_in_year - 1) % 7
+    # minimalist: pad December 31 out to its following Sunday, then count whole weeks.
+    trailing_days = (6 - december_31_weekday) % 7
+    (@day_offset + days_in_year + trailing_days) / 7
   end
 
   def add_next_week
@@ -43,8 +56,6 @@ class Year
       day = Day.new(day_name, '', @year_counter, @month_counter, @day_in_month_counter)
       @days.push(day)
       @day_in_month_counter += 1
-      @week_counter += 1
-      @day_counter += 1
       next unless @day_in_month_counter > @days_in_months[@month_counter - 1]
 
       @month_counter += 1
@@ -66,6 +77,7 @@ class Year
     (@year_number % 4).zero? && !((@year_number % 100).zero? && @year_number % 400 != 0)
   end
 
+  # minimalist: raw 0..6 offset from the week Monday back to January 1; no clamping.
   def first_monday
     years_since = @year_number - 1
     leap_years = years_since / 4
@@ -73,13 +85,8 @@ class Year
     four_century_years = years_since / 400
 
     total_leap_years = leap_years - century_years + four_century_years
-    total_precesion = years_since + total_leap_years
-    @day_counter = total_precesion % 7
-
-    first_monday = 8 - @day_counter
-
-    first_monday -= 7 if first_monday > 7
-    first_monday
+    total_precession = years_since + total_leap_years
+    total_precession % 7
   end
 
   def add_configured_tasks

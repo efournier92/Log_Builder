@@ -4,6 +4,10 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-05 | [trap] | models | `Year` hardcoded 54 weeks (378 days) and mis-seeded Monday January 1 as prior December 25, leaking an extra week into year-mode files | docs/specs/2026-10-05_YearBoundaryFullWeeks.md
+
+- 2026-10-05 | [outcome] | models | Fixed `Year#days` to the full Monday/Sunday weeks intersecting the year: 371 days, 378 only for a leap year starting Sunday; added edge and 1900..2100 `Date` tests | src/models/year.rb:46
+
 - 2026-10-05 | [outcome] | services | Shipped optional `birth_year` age rendering through `{{AGE}}`: added `BIRTH_YEAR`/`AGE` constants, `with_birth_year`/`template_includes?`, `test/birthday_age_config.yml`, a 9-example unit context, README Birthdays/Version History/TODO and glossary entries; full suite 321 examples 0 failures, rubocop 28 files 0 offenses; `test/test_config.yml` and e2e outputs unchanged | src/services/configured_tasks_service.rb:39; `bundle exec rspec`
 
 - 2026-10-05 | [decision] | services | `birth_year` is an optional Integer task key valid only with `to_specific_date`; `{{AGE}}` renders build year minus birth year, resolved once in `ConfiguredTasksService#add_configured_tasks` before `resolve_template`; a non-Integer, nil, future, other-method, or `{{AGE}}`-less template raises `INVALID_CONFIG` | docs/specs/2026-10-05_BirthdayAgeFromBirthYear.md

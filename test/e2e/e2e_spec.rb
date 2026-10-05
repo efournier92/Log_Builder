@@ -33,6 +33,22 @@ context 'User sketches a full-year DO file' do
     it 'adds dates to the log file' do
       expect(@do_hash['2020-01-01']).to_not be(nil)
     end
+
+    it 'adds exactly the boundary weeks of dated entries' do
+      expect(@do_hash.length).to eq(371)
+    end
+
+    it 'includes the adjacent-year boundary week days' do
+      expect(@do_hash).to have_key('2019-12-30')
+      expect(@do_hash).to have_key('2019-12-31')
+      expect(@do_hash).to have_key('2021-01-01')
+      expect(@do_hash).to have_key('2021-01-02')
+      expect(@do_hash).to have_key('2021-01-03')
+    end
+
+    it 'does not add days after the final boundary week' do
+      expect(@do_hash).to_not have_key('2021-01-04')
+    end
   end
 
   context 'given we configure periodic configured tasks for the whole 2020 year' do
