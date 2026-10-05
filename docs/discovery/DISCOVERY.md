@@ -4,6 +4,16 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-04 | [outcome] | services | Fixed get_date_hash_from_do_file: the loop no longer hangs, slice! lengths are corrected, and malformed input (unterminated date line, missing, truncated, or misattributed block, CRLF) now raises ArgumentError instead of silently dropping days; replaced the dead commented-out does-not-hang stub with four real regression tests; full suite 283 examples 0 failures, rubocop 28 files 0 offenses | src/services/file_parser_service.rb:9; test/spec/services/file_parser_service_spec.rb:33
+
+- 2026-10-04 | [decision] | test | Deleted the pending FileParser single-day example instead of enabling it: its stripped-fence expectation contradicted the fence-preserving two-day spec and the byte-identical e2e outputs, and single-day is not a separate code path; suite now 279 examples 0 failures 0 pending | src/services/file_parser_service.rb:33; test/spec/services/file_parser_service_spec.rb
+
+- 2026-10-04 | [trap] | repo | An untracked generated personal log at the repo root (DO_2026_10.md, 1377 lines) was not covered by .gitignore, so git add -A would have committed it; added DO_*.md to .gitignore | .gitignore:8
+
+- 2026-10-04 | [outcome] | services | Implemented to_each_weekday (Mon-Fri) and to_each_weekend (Sat-Sun) scheduling methods; both ignore odd_only/even_only and raise INVALID_DAY_NAME when the day_name key is present; added unit cases, an each_weekday_config.yml e2e context, and README supported-methods, examples, and Version History; full suite 279 examples 0 failures 0 pending after removing the stale pending case, rubocop 28 files 0 offenses | src/services/add_task_service.rb:30; test/e2e/e2e_spec.rb:192
+
+- 2026-10-04 | [decision] | services | Added to_each_weekday and to_each_weekend as fixed-set methods reusing Year::WEEKDAY_DAY_NAMES and Year::WEEKEND_DAY_NAMES; no configurable day list, no month filters, no holiday exclusion, no method registry; e2e uses a new fixture rather than editing test_config.yml so the byte-identical characterization stays intact | docs/specs/2026-10-04_EachWeekdayScheduling.md
+
 - 2026-10-04 | [outcome] | services | Fixed the merge render perf trap by deferring ConfigReaderService construction in TaskPrinterService#print_internal into the placeholder branch (it was built for every internal node); padded 154KB config with a daily internal task went 8.9s to 0.11s, full suite 3.77s to 0.80s, and a placeholder-bearing daily task stays 0.10s; also froze canonical children arrays and tightened the collision e2e to exact-match | src/services/task_printer_service.rb:44; src/services/tag_merge_service.rb:93
 
 - 2026-10-04 | [trap] | services | TagMergeService.render builds a fresh TaskPrinterService per root and print_internal lazily YAML.load_file per printer, so a large config with a frequent internal task re-parses the file once per root per day; measured 8.9s vs ~0.04s pre-merge on a 154KB padded config with one to_each_day internal task; superseded 2026-10-04 | src/services/tag_merge_service.rb:65; src/services/task_printer_service.rb:43
@@ -18,7 +28,7 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 - 2026-10-04 | [finding] | repo | Commit history exposes the author email (`efournier92@gmail.com`) on 630 commits and 7 routine-naming subjects; masking needs a rewrite, not done | `git log --all --format='%ae' | sort -u`
 - 2026-10-04 | [outcome] | repo | Test expansion final: 216 examples, 0 failures, 1 pending; src coverage 99.43% line / 91.47% branch | `bundle exec rspec`; `RUBYOPT="-r/tmp/lb_cov.rb" bundle exec rspec`
 - 2026-10-04 | [outcome] | services | Fixed `print_do_month` to filter by year and month | src/services/printer_service.rb:59
-- 2026-10-04 | [trap] | services | `get_date_hash_from_do_file` passes an index as a `slice!` length and can hang when a date line has no trailing newline | src/services/file_parser_service.rb:13,30
+- 2026-10-04 | [trap] | services | `get_date_hash_from_do_file` passes an index as a `slice!` length and can hang when a date line has no trailing newline; superseded 2026-10-04 | src/services/file_parser_service.rb:13,30
 - 2026-10-04 | [outcome] | services | Fixed `configured_template_by_name` with a nil guard on the missing section | src/services/config_reader_service.rb:24
 - 2026-10-04 | [finding] | services | `return if tags.nil?` is unreachable because `configured_tasks` coerces a missing key to `{}` | src/services/configured_tasks_service.rb:14
 - 2026-10-04 | [trap] | services | `{{TASK.*}}` composed templates are never resolved; exact lookup only, so they pass through literally | src/services/task_printer_service.rb:48

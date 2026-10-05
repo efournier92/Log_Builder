@@ -1,4 +1,5 @@
 require './src/services/file_parser_service'
+require 'timeout'
 
 describe FileParser do
   before :each do
@@ -30,17 +31,40 @@ describe FileParser do
       end
     end
 
-    # it 'does not hang' do
-    #   TODO: the while loop never terminates when next_new_line is nil
-    # end
+    context 'given a date line without a trailing newline' do
+      it 'raises instead of hanging' do
+        expect do
+          Timeout.timeout(2) { @parser.get_date_hash_from_do_file('## 2020-01-01') }
+        end.to raise_error(ArgumentError)
+      end
+    end
 
-    context 'given a single-day document' do
-      pending 'returns only the block content as the value' do
-        file_contents = "## 2020-01-01\n\n```text\nA\n```\n\n"
+    context 'given a date line without a following block' do
+      it 'raises' do
+        expect do
+          @parser.get_date_hash_from_do_file("## 2020-01-01\n")
+        end.to raise_error(ArgumentError)
+      end
+    end
 
-        output = @parser.get_date_hash_from_do_file(file_contents)
+    context 'given a block missing its closing fence' do
+      it 'raises instead of dropping the trailing day' do
+        file_contents = "## 2020-01-01\n\n```text\nA\n```\n\n" \
+                        "## 2020-01-02\n\n```text\nB\n```\n"
 
-        expect(output).to eq('2020-01-01' => 'A')
+        expect do
+          @parser.get_date_hash_from_do_file(file_contents)
+        end.to raise_error(ArgumentError)
+      end
+    end
+
+    context 'given a date line whose block belongs to a later date' do
+      it 'raises instead of misattributing the block' do
+        file_contents = "## 2020-01-01\n## 2020-01-02\n\n```text\nB\n```\n\n"
+
+        expect do
+          @parser.get_date_hash_from_do_file(file_contents)
+        end.to raise_error(ArgumentError)
       end
     end
   end

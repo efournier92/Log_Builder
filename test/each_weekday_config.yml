@@ -1,0 +1,19 @@
+lg_templates_config:
+  base:
+    - ""
+    - "### Do"
+    - ""
+    - "```text"
+    - "```"
+task_templates_config:
+  Weekday_Template:
+    - Weekday_Tag
+  Weekend_Template:
+    - Weekend_Tag
+tasks_config:
+  Every_Weekday:
+    method: to_each_weekday
+    template: Weekday_Template
+  Every_Weekend:
+    method: to_each_weekend
+    template: Weekend_Template

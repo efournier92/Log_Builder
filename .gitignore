@@ -5,3 +5,4 @@ workspace.xml
 builds/
 .ruby-lsp/
 _out_test/
+DO_*.md
