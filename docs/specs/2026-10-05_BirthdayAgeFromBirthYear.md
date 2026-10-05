@@ -1,6 +1,6 @@
 # Birthday Age From Birth Year
 
-Branch context: no feature branch was created. This spec targets the repository default branch (`master`) of the `Log_Builder` Ruby CLI. Spec time HEAD is `351e467` (`Add Configurable Root Tag Order`) with a clean working tree, so every `file:line` anchor below is stable at that commit.
+Branch context: no feature branch was created. This spec targets the repository default branch (`main`) of the `Log_Builder` Ruby CLI. Spec time HEAD is `351e467` (`Add Configurable Root Tag Order`) with a clean working tree, so every `file:line` anchor below is stable at that commit.
 
 ## Context And Motivation
 
@@ -175,7 +175,7 @@ Birthday(
 
 ## Rollout Plan
 
-- One commit on `master`, no branch required, no migration step, no feature flag.
+- One commit on `main`, no branch required, no migration step, no feature flag.
 - Ship the code, the new fixture, the new test constants, the README updates, and the checked-off TODO together so docs and behavior land in the same revision.
 - After verification, the operator may index the load-bearing decision from this spec as a `[decision]` entry in `docs/discovery/DISCOVERY.md`; this spec does not write that index.
 - Rollback is a straight revert because no data or persisted state changes.

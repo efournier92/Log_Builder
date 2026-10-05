@@ -1,6 +1,6 @@
 # Each Weekday Scheduling
 
-Branch context: no feature branch was created. This spec targets the repository default branch (`master`) of the `Log_Builder` Ruby CLI. It adds two scheduling methods to the existing `to_*` suite: `to_each_weekday` and `to_each_weekend`.
+Branch context: no feature branch was created. This spec targets the repository default branch (`main`) of the `Log_Builder` Ruby CLI. It adds two scheduling methods to the existing `to_*` suite: `to_each_weekday` and `to_each_weekend`.
 
 ## Context And Motivation
 
@@ -176,7 +176,7 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 4. Implement `AddTaskService#to_each_weekend`, run the cases green.
 5. Add `test/each_weekday_config.yml`, `TestConstants::CONFIG_FILES[:WEEKDAY_PATH]`, and the new e2e context. This context is characterization coverage added after both methods already exist, so it is expected to pass on the first run; the test-first red capture applies to the unit steps above, not here.
 6. Update the README supported-methods list, examples, and Version History entry.
-7. Run the full suite and rubocop. Single commit on `master`. No flag, no migration, no deploy step.
+7. Run the full suite and rubocop. Single commit on `main`. No flag, no migration, no deploy step.
 
 ## Test Plan
 

@@ -2,7 +2,7 @@
 
 ## Current State
 
-- Repo: Log_Builder (Ruby CLI). Branch `agent-refactor`, 15 commits ahead of `master`, 11 unpushed (tracking `origin/agent-refactor`, 0 behind).
+- Repo: Log_Builder (Ruby CLI). Branch `agent-refactor`, 15 commits ahead of `main`, 11 unpushed (tracking `origin/agent-refactor`, 0 behind).
 - Working tree: clean except untracked `.tool-versions` (dev toolchain pin, left untracked by decision).
 - Checks: `bundle exec rspec` = 216 examples, 0 failures, 1 pending. `bundle exec rubocop` = no offenses. src coverage 99.43% line / 91.47% branch.
 - Progressive Discovery is on: `docs/discovery/DISCOVERY.md` (grep by scope token, do not read the whole file).
@@ -22,7 +22,7 @@
 
 ## Next Actions
 
-1. Open a PR for `agent-refactor`; only the first 4 commits are pushed. Review range: `git log master..agent-refactor`.
+1. Open a PR for `agent-refactor`; only the first 4 commits are pushed. Review range: `git log main..agent-refactor`.
 2. Decide whether to rewrite the 11 unpushed commit messages to the author sentence-case style (branch-only force-push) or accept the agent register.
 3. Run the history cleanup in `docs/privacy/history-cleanup.md` when ready (owner approval required).
 4. Remaining bugs, documented with a pending spec where noted: `FileParser#get_date_hash_from_do_file` slice length and loop termination (`src/services/file_parser_service.rb:13,30`), `{{TASK.*}}` never resolved (`src/services/task_printer_service.rb:48`), dead `return if tags.nil?` (`src/services/configured_tasks_service.rb:14`).
@@ -34,7 +34,7 @@
 - `bundle exec rspec` -> 216 examples, 0 failures, 1 pending
 - `bundle exec rubocop --format simple` -> no offenses
 - `git grep -nI -E '/Users/|efournier92'` -> empty
-- `git log --oneline master..agent-refactor | wc -l` -> 15
+- `git log --oneline main..agent-refactor | wc -l` -> 15
 
 ## Open Risks / Blockers
 

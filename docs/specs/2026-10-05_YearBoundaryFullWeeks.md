@@ -1,6 +1,6 @@
 # Year Boundary Full Weeks
 
-Branch context: no feature branch is created. This spec targets the repository default branch (`master`) of the `Log_Builder` Ruby CLI. It defines and corrects the day range that `Year` builds for a target year.
+Branch context: no feature branch is created. This spec targets the repository default branch (`main`) of the `Log_Builder` Ruby CLI. It defines and corrects the day range that `Year` builds for a target year.
 
 ## Context And Motivation
 

@@ -5,7 +5,7 @@ Run one safe, autonomous loop on branch `agent-refactor`. You are the operator: 
 ## Current State
 
 - Repo: `<repo-root>`. Remote `origin` is the project GitHub remote.
-- Branch: `agent-refactor` (pushed, tracking `origin/agent-refactor`). Default branch `master`.
+- Branch: `agent-refactor` (pushed, tracking `origin/agent-refactor`). Default branch `main`.
 - Stack: Ruby CLI, entry `src/run.rb`, Ruby 3.4.7. RSpec (`.rspec` sets `--default-path test`); RuboCop (`AllCops: NewCops: disable`).
 - Baseline: `bundle exec rspec` = 105 examples, 0 failures. `bundle exec rubocop` = 0 offenses.
 - Test hazard: `test/e2e/e2e_spec.rb` and `test/spec/modules/log_builder_spec.rb` write `./_out_test`. Run the suite serially, never in parallel.

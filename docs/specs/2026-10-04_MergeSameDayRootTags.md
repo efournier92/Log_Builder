@@ -1,6 +1,6 @@
 # Merge Same-Day Root Tags
 
-Branch context: no feature branch was created. This spec targets the repository default branch (`master`) of the `Log_Builder` Ruby CLI. The example that anchors the requirements is `docs/examples/DuplicateTags_Example.md`.
+Branch context: no feature branch was created. This spec targets the repository default branch (`main`) of the `Log_Builder` Ruby CLI. The example that anchors the requirements is `docs/examples/DuplicateTags_Example.md`.
 
 ## Context And Motivation
 
@@ -221,7 +221,7 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 3. Wire `ConfiguredTasksService`, `AddTaskService`, and `Day`, run the full suite.
 4. Add the collision fixture and the e2e assertion, run the full suite.
 5. Remove the README TODO at `README.md:602` and document the merge behavior under Configuration.
-6. Single commit on `master`. No flag, no migration, no deploy step.
+6. Single commit on `main`. No flag, no migration, no deploy step.
 
 ## Test Plan
 

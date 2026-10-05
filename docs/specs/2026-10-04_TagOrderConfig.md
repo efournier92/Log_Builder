@@ -1,6 +1,6 @@
 # Tag Order Config
 
-Branch context: no feature branch was created. This spec targets the repository default branch (`master`) of the `Log_Builder` Ruby CLI. The working tree at spec time carries uncommitted changes from the `EachWeekdayScheduling` spec (`docs/specs/2026-10-04_EachWeekdayScheduling.md`), which add `to_each_weekday` and `to_each_weekend` to `src/services/add_task_service.rb`. Every `file:line` anchor below reflects that working tree. If those changes land first, re-locate by method name; the anchor set is otherwise stable.
+Branch context: no feature branch was created. This spec targets the repository default branch (`main`) of the `Log_Builder` Ruby CLI. The working tree at spec time carries uncommitted changes from the `EachWeekdayScheduling` spec (`docs/specs/2026-10-04_EachWeekdayScheduling.md`), which add `to_each_weekday` and `to_each_weekend` to `src/services/add_task_service.rb`. Every `file:line` anchor below reflects that working tree. If those changes land first, re-locate by method name; the anchor set is otherwise stable.
 
 ## Context And Motivation
 
@@ -284,7 +284,7 @@ Test-first is mandatory for every step: write the failing test, run it and captu
 4. Wire `ConfiguredTasksService`, add `tag_order` stubs to the non-nil doubles, run the full suite.
 5. Add the `test/tag_order_config.yml` fixture, its `ORDER_PATH` constant, and the e2e case, run the full suite.
 6. Document `tag_order_config` in `README.md` and add the ToC entry.
-7. Run `bundle exec rspec` and `bundle exec rubocop` clean. Single commit on `master`.
+7. Run `bundle exec rspec` and `bundle exec rubocop` clean. Single commit on `main`.
 
 ## Test Plan
 
