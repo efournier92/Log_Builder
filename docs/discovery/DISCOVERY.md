@@ -4,7 +4,11 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
-- 2026-10-05 | [outcome] | build | Single-file build implemented: `build.rb` + `builds/log-builder_2026-10-05` (25,933 B, 0755); suite 345/0, rubocop 0; DO/LG/tag-order outputs byte-identical on 3.4.7 and the DO output identical on stock 2.6.10 | `bundle exec rspec`; `/usr/bin/ruby -c builds/log-builder_2026-10-05`
+- 2026-10-08 | [outcome] | build | Critique fixes: exec bit `0755` on `build.rb` and snapshot; `# <src path>` marker per Bundle section; snapshot rebuilt (26,355 B, sha256 `1d4ef783...`); README notes snapshot choice, Psych caveat, dated install, Ruby dependency | clone `bundle exec rspec` 346/0; `bundle exec rubocop` 30/0
+
+- 2026-10-08 | [trap] | build | `build.rb` and the snapshot were committed mode `100644`; `core.filemode=false` hid it, so a fresh clone cannot run `./build.rb` and rubocop flags `Lint/ScriptPermission`; fixed via `git update-index --chmod=+x` | `git ls-files -s build.rb` -> `100644`, now `100755`
+
+- 2026-10-05 | [outcome] | build | Single-file build implemented: `build.rb` + `builds/log-builder_2026-10-05` (26,355 B after the marker rebuild, 0755); suite 345/0, rubocop 0; DO/LG/tag-order outputs byte-identical on 3.4.7 and the DO output identical on stock 2.6.10 | `bundle exec rspec`; `/usr/bin/ruby -c builds/log-builder_2026-10-05`
 
 - 2026-10-05 | [trap] | services | Ruby 3.1 hash value omission at `tag_merge_service.rb:125,129` broke the Ruby 2.6 floor; expanded to `name: name` behind a local `rubocop:disable Style/HashSyntax` | `/usr/bin/ruby -c builds/log-builder_2026-10-05` (syntax error before fix)
 

@@ -1,50 +1,49 @@
 # Handoff: Single-File Build Bundle
 
-Date: 2026-10-05. Repo: `/Users/e/mnt/bnk/cs/Log_Builder`.
+Date: 2026-10-05, updated 2026-10-08. Repo: `/Users/e/mnt/bnk/cs/Log_Builder`.
 
 ## Current State
 
-- Done: the spec is written and approved at sign-off: `docs/specs/2026-10-05_SingleFileBuildBundle.md`. Glossary terms Bundle, Build Snapshot, and Drift were added to `docs/GLOSSARY.md`. No implementation has started.
-- In progress: nothing.
-- Uncommitted: `docs/GLOSSARY.md` (modified) and `docs/specs/2026-10-05_SingleFileBuildBundle.md` (untracked). Discovery entries were appended this session.
-- Branch: `perf/lazy-day-render`, tip `bafaa2c` ("Make Day Rendering Lazy ...").
-- `main` is at `3189193`. `perf/lazy-day-render` is exactly one commit ahead and is not merged. The spec's current-state analysis was performed against this working tree, so its facts match `bafaa2c`.
-- `builds/` does not exist on disk. `build_package` still exists. No `build.rb` yet.
-- Baseline before this feature, with lazy render, is 332 examples and 0 failures (`docs/discovery/DISCOVERY.md`).
+- Branch `single-file-build`, tip `abb8fa5`, 5 commits ahead of `main` (`27b5d31`), 0 behind. No PR exists.
+- The feature is implemented and all critique fixes are applied in the working tree, but nothing new is committed.
+- Uncommitted: the exec-bit mode change on `build.rb` and `builds/log-builder_2026-10-05` is staged; the marker rebuild of the snapshot and edits to `build.rb`, `README.md`, the spec, `test/spec/build_spec.rb`, `DISCOVERY.md`, and this handoff are unstaged.
+- Proof of green: the uncommitted tree was committed into a throwaway clone and passed `bundle exec rspec` with 346 examples, 0 failures, and `bundle exec rubocop` with 30 files, 0 offenses.
+- In this working tree the drift example fails until the snapshot change is committed, because it compares against the `HEAD` blob.
 
-## Key Decisions And Why
+## What Shipped On This Branch
 
-- Replace the platform-specific Ruby Packer binary with `build.rb`, a Ruby script that concatenates `src/` into one file. Ruby Packer output does not run across platforms and needs an external toolchain.
-- Minify with Ruby's bundled Prism parser, stripping comments, blank lines, and leading indentation while protecting string, symbol, regex, and heredoc ranges. No third-party Ruby minifier is production-safe. The script aborts if Prism is missing rather than falling back to regex.
-- Artifact is `builds/log-builder_YYYY-MM-DD`, extensionless with a shebang and mode `0755`, deterministic content with no timestamp inside. Committed as dated snapshots only; the maintainer chooses when to build. `builds/` is un-ignored and excluded from rubocop.
-- Runtime floor is Ruby 2.6+, using only the `yaml` and `fileutils` standard libraries. Stock macOS still ships Ruby 2.6.10; common Linux defaults are 3.0 or newer; the source uses no 3.x-only syntax.
-- `FileParser` is test-only and moves from `src/services/file_parser_service.rb` to `test/support/file_parser.rb`, updating two requires, so the artifact carries no test scaffold.
-- Verification is a new `test/spec/build_spec.rb`: header and require checks, determinism, `ruby -c`, drift against the newest committed snapshot, and three byte-identical equivalence cases against `src/run.rb`.
-- `build_package` is deleted and `README.md` Build Packaging is rewritten, removing the Ruby Packer references.
+- `build.rb`: deterministic `src/` concatenation; Prism strips comments, blank lines, and leading indent while protecting literals; each section is prefixed with a `# <src path>` marker.
+- `builds/log-builder_2026-10-05`: Build Snapshot, 26,355 B, mode 0755, sha256 `1d4ef78331c05ad3bf4797119baa7375dc1e0cafb960962195d27ae426732bf5`.
+- `test/spec/build_spec.rb`: 14 examples covering the header, requires, section markers, determinism, `ruby -c`, the `write` path, drift, and three byte-identical equivalence cases.
+- `FileParser` moved to `test/support/file_parser.rb`; `build_package` deleted; `.gitignore`, `.rubocop.yml`, and `README.md` updated.
+
+## Critique Results (2026-10-08)
+
+- All findings applied.
+- Blocker: `build.rb` and the snapshot were committed as mode `100644`, so a fresh clone cannot run `./build.rb` and rubocop flags `Lint/ScriptPermission`. Cause: `core.filemode=false` hides the bit. Fixed with `git update-index --chmod=+x`; a committed clone now shows `100755`.
+- Backtrace mapping: each Bundle section now starts with `# <src path>`, so a stripped backtrace frame maps to its source file.
+- README: added newest-snapshot guidance, a Psych 3 versus 4 and 5 alias caveat, a dated install form with a `log-builder` symlink, and the Ruby-dependency regression note in Version History.
+- Spec: Summary Of Changes boxes ticked; source transformation now documents the section markers.
+- Accepted, no code change: the spec was retrofitted in the implementation commit; evidence was self-authored; `builds/DO_2026_10.md` is a generated personal log kept out of git by the existing `DO_*.md` ignore.
 
 ## Next Actions
 
-1. Resolve the base branch. The spec's Branch Context says cut `single-file-build` from `main`, but the latest logic (lazy day render) exists only on `perf/lazy-day-render` at `bafaa2c`. Either fast-forward or merge `perf/lazy-day-render` into `main` first, or cut `single-file-build` from `bafaa2c`. Do not branch from stale `main` if "latest logic" is required. Update the spec's Branch Context to record the choice.
-2. Commit the spec and glossary via `ship-changes` so the tree is clean. Expected result: `docs/specs/2026-10-05_SingleFileBuildBundle.md` and `docs/GLOSSARY.md` committed; `implement-spec`'s dirty-tree guard would otherwise stop on the spec itself.
-3. Create the chosen branch and run `implement-spec docs/specs/2026-10-05_SingleFileBuildBundle.md`.
-4. Implement per the spec: add `build.rb`; move `src/services/file_parser_service.rb` to `test/support/file_parser.rb` and update `test/spec/services/file_parser_service_spec.rb:1` and `test/e2e/e2e_spec.rb:1`; delete `build_package`; edit `.gitignore` and `.rubocop.yml`; rewrite `README.md:94-107` and add the `### 2026-10-05` Version History bullet at `README.md:686`; add `test/spec/build_spec.rb`.
-5. Run `ruby build.rb`. Expected result: `builds/log-builder_<today>` created with mode `0755`.
-6. Run `bundle exec rspec` and `bundle exec rubocop`. Expected result: 0 failures and 0 offenses.
-7. Commit source, docs, tests, and the first Build Snapshot via `ship-changes`.
+1. Commit everything via `ship-changes`: the exec-bit fix, the marker rebuild, and the README, spec, and test edits.
+2. Re-run `bundle exec rspec` after the commit; the drift example goes green once the snapshot is committed.
+3. Open a PR from `single-file-build` to `main` and merge.
+4. After merge, delete the branch and prune.
 
 ## Verify Commands
 
-- `git -C /Users/e/mnt/bnk/cs/Log_Builder branch --show-current` should print `perf/lazy-day-render` at the start.
-- `git -C /Users/e/mnt/bnk/cs/Log_Builder log --oneline -1` should print `bafaa2c`.
-- `git -C /Users/e/mnt/bnk/cs/Log_Builder status --short` should show only `docs/GLOSSARY.md` modified and the spec untracked before step 2.
-- `bundle exec rspec` from the repo root should print 332 examples, 0 failures as the starting baseline.
-- `bundle exec rubocop` from the repo root should print 0 offenses as the starting baseline.
-- `ruby -v` should print 3.4.7, and `ruby -e "require 'prism'; puts Prism::VERSION"` should print a version.
+- `git -C /Users/e/mnt/bnk/cs/Log_Builder rev-list --left-right --count main...single-file-build` should print `0	5`.
+- `git ls-files -s build.rb` should print `100755` after the commit.
+- `bundle exec rspec` prints 346 examples, 0 failures once the snapshot is committed.
+- `bundle exec rubocop` prints 30 files, 0 offenses.
+- `shasum -a 256 builds/log-builder_2026-10-05` prints `1d4ef78331c05ad3bf4797119baa7375dc1e0cafb960962195d27ae426732bf5`.
 
-## Open Risks And Blockers
+## Open Risks
 
-- Branch divergence is the blocker to resolve first: the spec names `main`, the latest logic lives on `perf/lazy-day-render` (`bafaa2c`), unmerged.
-- Ruby 2.6 is end-of-life and Apple-deprecated; the floor may need to rise if Apple removes the bundled interpreter.
-- The build host needs Ruby 3.3 or newer for Prism; older build hosts will abort by design.
-- Content determinism means two snapshots built from unchanged source are byte-identical, so git stores one blob and only filenames differ. This is intended.
-- The privacy rewrite in `docs/privacy/history-cleanup.md` targets old large `builds/` blobs only; this feature re-introduces `builds/` into future history and does not touch that plan.
+- Ruby 2.6 is end of life and Apple deprecated. The floor can rise without source changes if Apple removes it.
+- The build host needs Ruby 3.3 or newer for Prism. Older build hosts abort by design.
+- Reintroducing `builds/` to history conflicts with the deferred privacy rewrite; that plan is untouched.
+- `YAML.load_file` differs on Psych 3 versus Psych 4 and 5; documented in the README, not code-fixed.
