@@ -94,10 +94,10 @@ class TagMergeService
     result
   end
 
-  def self.render(roots, config_file)
+  def self.render(roots, config_file, sources = {})
     roots.map do |root|
       tree = root[:leaf] ? [root[:name]] : { root[:name] => printable_children(root[:children]) }
-      TaskPrinterService.new(config_file).print(tree)
+      TaskPrinterService.new(config_file, sources[root[:name]]).print(tree)
     end.join
   end
 

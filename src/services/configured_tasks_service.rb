@@ -16,6 +16,7 @@ class ConfiguredTasksService
     add_task_service = AddTaskService.new(reader.tag_order)
 
     tags.each do |task_name, config|
+      config[ConfigConstants::TASK_SOURCE_KEY] = task_name
       printer = TaskPrinterService.new(config_file, task_name)
       method = config[ConfigConstants::KEYS[:METHOD]]
       template_key = config[ConfigConstants::KEYS[:TEMPLATE]]

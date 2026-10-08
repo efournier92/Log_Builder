@@ -114,6 +114,21 @@ describe 'LogBuilderBundler' do
     end
   end
 
+  it 'tracks build.rb and every build snapshot with the executable bit set' do
+    stdout, _stderr, status = Open3.capture3('git', 'ls-files', '-s', '--', 'build.rb', 'builds/', chdir: ROOT)
+
+    expect(status.exitstatus).to eq(0)
+    entries = stdout.lines.map(&:split)
+    expect(entries.map { |entry| entry[3] }).to include('build.rb')
+
+    executable = entries.select do |_mode, _sha, _stage, path|
+      path == 'build.rb' || (path || '').start_with?('builds/log-builder_')
+    end
+    executable.each do |mode, _sha, _stage, path|
+      expect(mode).to eq('100755'), "#{path} is missing the executable bit"
+    end
+  end
+
   it 'matches src/run.rb for a DO year' do
     compare_outputs('./test/test_config.yml', 'DO', '2020', 'ALL', 'DO_2020.md')
   end
