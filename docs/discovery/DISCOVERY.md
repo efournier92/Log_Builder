@@ -4,6 +4,20 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [outcome] | build | Critique fixes: exec bit `0755` on `build.rb` and snapshot; `# <src path>` marker per Bundle section; snapshot rebuilt (26,355 B, sha256 `1d4ef783...`); README notes snapshot choice, Psych caveat, dated install, Ruby dependency | clone `bundle exec rspec` 346/0; `bundle exec rubocop` 30/0
+
+- 2026-10-08 | [trap] | build | `build.rb` and the snapshot were committed mode `100644`; `core.filemode=false` hid it, so a fresh clone cannot run `./build.rb` and rubocop flags `Lint/ScriptPermission`; fixed via `git update-index --chmod=+x` | `git ls-files -s build.rb` -> `100644`, now `100755`
+
+- 2026-10-05 | [outcome] | build | Single-file build implemented: `build.rb` + `builds/log-builder_2026-10-05` (26,355 B after the marker rebuild, 0755); suite 345/0, rubocop 0; DO/LG/tag-order outputs byte-identical on 3.4.7 and the DO output identical on stock 2.6.10 | `bundle exec rspec`; `/usr/bin/ruby -c builds/log-builder_2026-10-05`
+
+- 2026-10-05 | [trap] | services | Ruby 3.1 hash value omission at `tag_merge_service.rb:125,129` broke the Ruby 2.6 floor; expanded to `name: name` behind a local `rubocop:disable Style/HashSyntax` | `/usr/bin/ruby -c builds/log-builder_2026-10-05` (syntax error before fix)
+
+- 2026-10-05 | [trap] | build | System `ruby 2.6.10` cannot require psych/date under a Homebrew `GEM_HOME` (tmuxinator); run system-2.6 checks with `env -u GEM_HOME` | `env -u GEM_HOME /usr/bin/ruby builds/log-builder_2026-10-05 ./test/test_config.yml DO 2020 ALL /tmp/lb26`
+
+- 2026-10-05 | [decision] | repo | Replaced the platform-specific Ruby Packer binary build with a single deterministic stdlib-only Ruby bundle produced by `build.rb`: Prism strips comments, blank lines, and leading indent while protecting literals; artifact is `builds/log-builder_YYYY-MM-DD`; runtime floor is Ruby 2.6+ | docs/specs/2026-10-05_SingleFileBuildBundle.md
+
+- 2026-10-05 | [finding] | repo | Stock macOS ships Ruby 2.6.10 through macOS 26, which sets the cross-platform runtime floor for the single-file bundle; common Linux defaults are Ruby 3.0 or newer | apple-oss-distributions/ruby tag `ruby-175`
+
 - 2026-10-05 | [outcome] | services | Lazy day render ends per-attach re-render: 200-daily-task padded config 17.6s -> 0.69s year and 17.9s -> 0.53s month; suite 332/0, rubocop clean, 15 outputs sha256-identical | src/models/day.rb:18
 
 - 2026-10-05 | [decision] | models | `Day#tasks` stays a rendered String but computes lazily from `tag_roots` plus `config_file`; `attach` invalidates with `tasks = nil`, yielding one render per printed day | src/models/day.rb:18

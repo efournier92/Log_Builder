@@ -121,11 +121,14 @@ class TagMergeService
     end
   end
 
+  # Explicit hash values are required by the Ruby 2.6 runtime floor, which lacks value omission.
+  # rubocop:disable Style/HashSyntax
   def self.node(name, children)
-    { name:, leaf: false, children: children.freeze }.freeze
+    { name: name, leaf: false, children: children.freeze }.freeze
   end
 
   def self.leaf_node(name)
-    { name:, leaf: true, children: [].freeze }.freeze
+    { name: name, leaf: true, children: [].freeze }.freeze
   end
+  # rubocop:enable Style/HashSyntax
 end

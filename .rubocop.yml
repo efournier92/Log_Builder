@@ -1,5 +1,7 @@
 AllCops:
   NewCops: disable
+  Exclude:
+    - 'builds/**/*'
 
 Style/TrailingCommaInHashLiteral:
   Enabled: false

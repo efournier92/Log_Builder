@@ -45,3 +45,15 @@ The optional `birth_year` integer on a `to_specific_date` task recording the cal
 **Age**
 
 The Build Year minus the Birth Year, rendered as a base-10 integer string into a task's `{{AGE}}` placeholder. _Avoid_: completed age, exact age.
+
+**Bundle**
+
+The single generated Ruby file containing all of Log Builder's runtime logic, runnable on a bare Ruby 2.6 or newer install with no gems beyond the standard library. _Avoid_: binary, package, executable.
+
+**Build Snapshot**
+
+A committed, date-named copy of the Bundle at `builds/log-builder_YYYY-MM-DD`. _Avoid_: release, artifact, output.
+
+**Drift**
+
+The condition where the current `src/` produces a Bundle whose bytes differ from the newest committed Build Snapshot. _Avoid_: staleness, mismatch.
