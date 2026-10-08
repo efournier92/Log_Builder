@@ -232,7 +232,7 @@ describe ConfiguredTasksService do
       expect(stored[0][:name]).to eq('Holiday')
     end
 
-    it 'renders a missing named template as a single leaf instead of raising' do
+    it 'raises when a named template is missing instead of rendering a leaf' do
       task_config = {
         ConfigConstants::KEYS[:METHOD] => 'to_specific_date',
         ConfigConstants::KEYS[:TEMPLATE] => 'Missing_Template',
@@ -245,10 +245,31 @@ describe ConfiguredTasksService do
       allow(reader).to receive(:tag_order).and_return([])
       allow(ConfigReaderService).to receive(:new).and_return(reader)
 
-      expect { @tag_service.add_configured_tasks(@year) }.to_not raise_error
+      expect { @tag_service.add_configured_tasks(@year) }.to raise_error(
+        ConfigReaderService::InvalidConfigError,
+        /no template named 'Missing_Template'/
+      )
+    end
 
-      day = @year.days.find { |d| d.year == 2020 && d.month == 1 && d.month_day == 1 }
-      expect(day.tasks).to include("Missing_Template,\n")
+    it 'names the owning task when a render error surfaces on the day' do
+      task_config = {
+        ConfigConstants::KEYS[:METHOD] => 'to_specific_date',
+        ConfigConstants::KEYS[:TEMPLATE] => 'Broken',
+        ConfigConstants::KEYS[:MONTH] => 1,
+        ConfigConstants::KEYS[:DAY] => 1
+      }
+      reader = double('ConfigReaderService')
+      allow(reader).to receive(:configured_tasks).and_return('Broken_Task' => task_config)
+      allow(reader).to receive(:configured_task_templates).and_return('Broken' => ['{{CONTENT}}'])
+      allow(reader).to receive(:tag_order).and_return([])
+      allow(ConfigReaderService).to receive(:new).and_return(reader)
+
+      @tag_service.add_configured_tasks(@year)
+
+      day = @year.days.find { |d| d.month == 1 && d.month_day == 1 }
+      expect { day.tasks }.to raise_error(
+        ConfigReaderService::InvalidConfigError, /tasks_config\['Broken_Task'\]/
+      )
     end
 
     it 'produces one merged root when two tasks render the same root on the same day' do

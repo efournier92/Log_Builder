@@ -205,6 +205,8 @@ class AddTaskService
 
   def attach(day, config, _do_year)
     incoming = TagMergeService.canonical_roots(config[ConfigConstants::KEYS[:TAG]])
+    task_name = config[ConfigConstants::TASK_SOURCE_KEY]
+    incoming.each { |node| day.tag_sources[node[:name]] ||= task_name }
     day.tag_roots = TagMergeService.add_roots(day.tag_roots, incoming)
     day.tag_roots = TagMergeService.order_roots(day.tag_roots, @tag_order)
     day.tasks = nil # minimalist: invalidate the lazy render cache so it rebuilds on next read.

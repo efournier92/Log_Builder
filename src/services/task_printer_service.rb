@@ -1,11 +1,13 @@
 require_relative './config_reader_service'
 require_relative '../constants/config_constants'
+require_relative '../constants/app_constants'
 
 class TaskPrinterService
   attr_reader :output
 
-  def initialize(config_file)
+  def initialize(config_file, task_label = nil)
     @config_file = config_file
+    @task_label = task_label
     @output = ''
     @current_depth = 0
     @current_node = 0
@@ -32,6 +34,8 @@ class TaskPrinterService
     return if node.nil?
 
     node.each do |text|
+      raise_invalid_config("unresolved placeholder '#{text}'") if unresolved_placeholder?(text)
+
       append_leaf(text)
       @current_node += 1
     end
@@ -42,17 +46,15 @@ class TaskPrinterService
 
     node.each do |text, task|
       if template_string?(text)
-        @reader ||= ConfigReaderService.new(@config_file)
         name = get_name_from_placeholder(text)
-        configured_template = @reader.configured_template_by_name(name)
-        # TODO: Inform user if configured_template.nil?
-        begin
+        unless name.start_with?('TASK.')
+          @reader ||= ConfigReaderService.new(@config_file)
+          configured_template = @reader.configured_template_by_name(name)
+          raise_invalid_config("no template named '#{name}'") if configured_template.nil?
+          raise_invalid_config("template '#{name}' is not a mapping") unless configured_template.is_a?(Hash)
+
           text = configured_template.keys[0]
           task = configured_template.values[0]
-        rescue StandardError
-          # TODO: Implement error-handling service
-          puts "TEXT: #{text}"
-          puts "TASK: #{task}"
         end
       end
       if task.nil?
@@ -66,6 +68,15 @@ class TaskPrinterService
         print_closer
       end
     end
+  end
+
+  def unresolved_placeholder?(text)
+    text.is_a?(String) && text.match?(/\{\{(?!TASK\.)/)
+  end
+
+  def raise_invalid_config(problem)
+    problem = "tasks_config['#{@task_label}']: #{problem}" if @task_label
+    raise ConfigReaderService::InvalidConfigError, ConfigReaderService.report(@config_file, [problem])
   end
 
   def append_internal(text)
@@ -111,6 +122,8 @@ class TaskPrinterService
 
   def update_content_array(template_placeholders, template_variables)
     template_placeholders.each do |template_string|
+      next unless template_string.is_a?(String)
+
       template_placeholder = get_placeholder(template_string)
 
       mapping = template_variables.detect { |m| m.keys[0] == template_placeholder }

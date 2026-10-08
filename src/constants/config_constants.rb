@@ -26,6 +26,9 @@ module ConfigConstants
 
   TAG_ORDER_MARKER = '~~OTHER~~'.freeze
 
+  # Internal key stamped on a task config so attach can record the owning task on the day.
+  TASK_SOURCE_KEY = :__task_name__
+
   PLACEHOLDERS = {
     TEMPLATE_START: '{{',
     TEMPLATE_END: '}}',
@@ -33,7 +36,7 @@ module ConfigConstants
     AGE: '{{AGE}}'
   }.freeze
 
-  CONFIGURED_TASK_METHODS = {
+  BIRTH_YEAR_METHODS = {
     SPECIFIC_DATE: 'to_specific_date',
   }.freeze
 

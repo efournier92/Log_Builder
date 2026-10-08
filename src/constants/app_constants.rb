@@ -24,6 +24,7 @@ module AppConstants
   }.freeze
 
   ERROR_MESSAGES = {
-    INVALID_CONFIG_FILE: 'Invalid config file. Exiting...'
+    INVALID_CONFIG_FILE: 'Invalid config file. Exiting...',
+    INVALID_CONFIG_REPORT: "Invalid configuration:\n%s"
   }.freeze
 end

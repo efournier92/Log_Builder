@@ -2,6 +2,7 @@ require_relative '../models/year'
 require_relative '../constants/app_constants'
 require_relative '../services/printer_service'
 require_relative '../services/add_task_service'
+require_relative '../services/config_reader_service'
 require_relative '../services/input_validation_service'
 
 # Main class to kickstart the file-printing process according to initialized values
@@ -22,16 +23,33 @@ class LogBuilder
   end
 
   def build_file
-    collect_user_input
+    collect_mode_input
+    validate_config
+    collect_date_input
     build_by_mode
+  rescue ConfigReaderService::InvalidConfigError => e
+    warn e.message
+    raise SystemExit, 1
   end
 
   def collect_user_input
-    prompt_for_mode_input until valid_mode?(@mode)
+    collect_mode_input
 
+    collect_date_input
+  end
+
+  def collect_mode_input
+    prompt_for_mode_input until valid_mode?(@mode)
+  end
+
+  def collect_date_input
     prompt_for_year_input until valid_year_number?(@year_number)
 
     prompt_for_month_input until valid_month?(@month, @mode)
+  end
+
+  def validate_config
+    ConfigReaderService.validate!(@config_file, mode: @mode)
   end
 
   def build_by_mode

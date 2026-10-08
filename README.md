@@ -76,7 +76,7 @@ Event_Attend(
   ),
 ),
 Hobby_Gear(
-  Gear_Maintenance(
+  Version_Adjust(
     Because(
       Months_Since(3,),
     ),
@@ -96,19 +96,27 @@ Hobby_Gear(
 ### Build Overview
 
 - `ruby build.rb` produces `builds/log-builder_YYYY-MM-DD`, a single self-contained Ruby file containing all of Log Builder's runtime logic.
-- The generated file is never edited by hand; run `ruby build.rb` to regenerate it.
-- Multiple snapshots can accumulate in `builds/`; run the newest-dated file.
+- The generated file is never to be edited by hand.
+  - **Run `ruby build.rb` to regenerate it.**
+- You'll find multiple snapshots in `builds/`.
+  - Favor the newest file.
 
 ### Runtime Requirements
 
-- The generated file runs on any stock Ruby 2.6 or newer with only the `yaml` and `fileutils` standard libraries.
-- Config parsing uses Psych; a config with YAML aliases or anchors loads on Ruby 2.6 (Psych 3) but raises `Psych::AliasesNotEnabled` on Ruby 3.1 and newer (Psych 4 and 5). Avoid aliases for cross-version portability.
-- Rebuilding from source needs Ruby 3.3 or newer so `prism` is available.
+- The generated file runs on any Ruby 2.6+ version.
+  - Only requires `yaml` and `fileutils` standard libraries.
+- Config parsing uses [Psych](https://github.com/ruby/psych).
+  - A config with YAML aliases or anchors loads on Ruby 2.6 (Psych 3) but raises `Psych::AliasesNotEnabled` on Ruby 3.1 and newer.
+  - Avoid aliases for cross-version portability.
+- Rebuilding from source requires Ruby 3.3 or newer so `prism` is available.
 
 ### Running and Installing
 
-- Run the generated file directly: `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml`; the repository sample config is `test/test_config.yml`.
-- Install the dated file into a directory on your `PATH` without dropping the date: `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/` then `ln -sf ~/bin/log-builder_YYYY-MM-DD ~/bin/log-builder`, so the installed build stays identifiable while the documented `log-builder` command resolves. Use `sudo` only for a system directory such as `/usr/local/bin`.
+- See `test/test_config.yml` for a sample config file.
+- Run the generated file directly.
+  - Example: `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml`
+- Install the generated file as `log-builder` in a directory on your `PATH`.
+  - `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/log-builder`
 
 ## Configuration
 
@@ -687,6 +695,16 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 
 ## Version History
 
+### 2026-10-08
+
+- Validates the configuration once at load: one pass collects every problem, prints one report to STDERR, and exits non-zero before any output file is written.
+  - Catches YAML syntax errors, duplicate keys, unknown or missing methods, missing or mistyped keys, unknown top-level keys, and unresolved templates or placeholders.
+  - Reports the config path and 1-based line numbers, and names the owning task for a render error.
+  - Rejects a null, Integer, or otherwise non-String, non-mapping, non-list `template` instead of silently attaching nothing.
+  - Requires every `lg_templates_config` value to match the `base` type, String or list, so a mixed config cannot raise a raw `TypeError` during LG rendering.
+- Writes output through a sibling temp file and renames it into place, so a failed render leaves any existing file untouched.
+- Echoes `Wrote <path>` to STDOUT on each successful write.
+
 ### 2026-10-05
 
 - Adds an optional `birth_year` to `to_specific_date` tasks, rendered through the `{{AGE}}` placeholder as the build year minus the birth year.
@@ -725,11 +743,7 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 - [X] Address LG mode.
   - [X] Config driven.
   - [X] Add example to README.
-- [ ] Warn of duplicate keys in YAML.
-- [ ] Add begin/rescue blocks to all YAML-related methods.
-  - [ ] Warn user of improper configuration.
-  - [ ] Do not stop running on improper configuration.
-- [ ] Validate inputs to `add_task_service`.
-- [ ] Ask user to open with VIM.
 - [X] Calculate birthday age from year.
+- [X] Echo the written output path on success.
+- [ ] Ask user to open with VIM.
 

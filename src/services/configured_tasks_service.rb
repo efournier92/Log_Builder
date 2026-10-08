@@ -15,13 +15,27 @@ class ConfiguredTasksService
 
     add_task_service = AddTaskService.new(reader.tag_order)
 
-    tags.each_value do |config|
-      printer = TaskPrinterService.new(config_file)
+    tags.each do |task_name, config|
+      config[ConfigConstants::TASK_SOURCE_KEY] = task_name
+      printer = TaskPrinterService.new(config_file, task_name)
       method = config[ConfigConstants::KEYS[:METHOD]]
-      template = reader.configured_task_templates[config[ConfigConstants::KEYS[:TEMPLATE]]]
+      template_key = config[ConfigConstants::KEYS[:TEMPLATE]]
+      templates = reader.configured_task_templates
+      template = templates.is_a?(Hash) ? templates[template_key] : nil
       template_variables = config[ConfigConstants::KEYS[:TEMPLATE_VARIABLES]]
 
-      template = config[ConfigConstants::KEYS[:TEMPLATE]] if template.nil?
+      if template.nil? && template_key.is_a?(String)
+        raise ConfigReaderService::InvalidConfigError,
+              format(ConfigConstants::ERRORS[:INVALID_CONFIG], "no template named '#{template_key}'")
+      end
+
+      template = template_key if template.nil? && (template_key.is_a?(Hash) || template_key.is_a?(Array))
+
+      if template.nil?
+        raise ConfigReaderService::InvalidConfigError,
+              format(ConfigConstants::ERRORS[:INVALID_CONFIG],
+                     "tasks_config['#{task_name}']: 'template' must name a template or be an inline mapping/list")
+      end
 
       template_variables = with_birth_year(config, method, template, template_variables, year)
 
@@ -36,25 +50,25 @@ class ConfiguredTasksService
 
   private
 
+  def raise_invalid_config(message)
+    raise ConfigReaderService::InvalidConfigError, format(ConfigConstants::ERRORS[:INVALID_CONFIG], message)
+  end
+
   def with_birth_year(config, method, template, template_variables, year)
     return template_variables unless config.key?(ConfigConstants::KEYS[:BIRTH_YEAR])
 
     birth_year = config[ConfigConstants::KEYS[:BIRTH_YEAR]]
 
-    unless method == ConfigConstants::CONFIGURED_TASK_METHODS[:SPECIFIC_DATE]
-      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year is only supported with to_specific_date')
+    unless method == ConfigConstants::BIRTH_YEAR_METHODS[:SPECIFIC_DATE]
+      raise_invalid_config('birth_year is only supported with to_specific_date')
     end
 
-    unless birth_year.is_a?(Integer)
-      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year must be an integer')
-    end
+    raise_invalid_config('birth_year must be an integer') unless birth_year.is_a?(Integer)
 
-    if birth_year > year.year_number
-      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year cannot be in the future')
-    end
+    raise_invalid_config('birth_year cannot be in the future') if birth_year > year.year_number
 
     unless template_includes?(template, ConfigConstants::PLACEHOLDERS[:AGE])
-      raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year requires {{AGE}} in the template')
+      raise_invalid_config('birth_year requires {{AGE}} in the template')
     end
 
     template_variables = [] if template_variables.nil?

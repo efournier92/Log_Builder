@@ -98,6 +98,26 @@ describe PrinterService do
     end
   end
 
+  describe 'atomic output writes' do
+    context 'given a render failure and a pre-existing output file' do
+      it 'leaves the existing file byte-for-byte and removes the temp file' do
+        Dir.mktmpdir do |tmp_dir|
+          target = File.join(tmp_dir, 'DO_2020.md')
+          File.write(target, "pre-existing\n")
+          printer = PrinterService.new('./test/test_config.yml', tmp_dir)
+          day = double('day', year: 2020, month: 1, month_day: 1, name: 'Monday')
+          allow(day).to receive(:tasks).and_raise(ConfigReaderService::InvalidConfigError, 'render failed')
+          year = double('year', year_number: 2020, days: [day])
+
+          expect { printer.print_do_year(year) }.to raise_error(ConfigReaderService::InvalidConfigError)
+
+          expect(File.read(target)).to eq("pre-existing\n")
+          expect(Dir.children(tmp_dir)).to eq(['DO_2020.md'])
+        end
+      end
+    end
+  end
+
   describe '#print_do_month' do
     context 'given a year of days in different months' do
       it 'writes only the days in the requested month' do
