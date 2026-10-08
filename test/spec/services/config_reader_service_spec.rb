@@ -194,6 +194,18 @@ describe ConfigReaderService do
 
         expect(validation_problem(contents)).to include("duplicate key 'tasks_config' in top level (line 5)")
       end
+
+      it 'does not flag a plain and a quoted key with the same text as duplicates' do
+        contents = <<~YAML
+          task_templates_config:
+            1:
+              - X
+            "1":
+              - X
+        YAML
+
+        in_tmp_config(contents) { |path| expect(ConfigReaderService.validate!(path, mode: 'DO')).to be_a(Hash) }
+      end
     end
 
     context 'given an unknown method' do
@@ -415,6 +427,36 @@ describe ConfigReaderService do
 
         in_tmp_config(contents) { |path| expect(ConfigReaderService.validate!(path, mode: 'DO')).to be_a(Hash) }
       end
+
+      it 'reports a null template value' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template:
+        YAML
+
+        expect(validation_problem(contents))
+          .to include("'template' must name a template or be an inline mapping/list")
+      end
+
+      it 'reports a non-String, non-mapping, non-list template value' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: 42
+        YAML
+
+        expect(validation_problem(contents))
+          .to include("'template' must name a template or be an inline mapping/list")
+      end
     end
 
     context 'given multiple problems' do
@@ -483,6 +525,22 @@ describe ConfigReaderService do
 
         expect(validation_problem(contents, validation_mode: 'LG'))
           .to include("lg_templates_config: 'weekday' must be a non-nil String or list")
+      end
+
+      it 'reports a per-day string when base is a list' do
+        contents = <<~YAML
+          lg_templates_config:
+            base:
+              - ""
+            weekday:
+              - ""
+            weekend:
+              - ""
+            monday: not_a_list
+        YAML
+
+        expect(validation_problem(contents, validation_mode: 'LG'))
+          .to include("lg_templates_config: 'monday' must be a list, matching 'base'")
       end
     end
 

@@ -4,6 +4,14 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [trap] | services | A null or non-String/Hash/Array `template` validated clean and attached nothing at exit 0; now rejected with a named-template message | src/services/config_reader_service.rb:390
+
+- 2026-10-08 | [trap] | services | Duplicate detection compared only `key.value`, so YAML `1:` and `"1":` were false duplicates; identity now includes `key.plain` | src/services/config_reader_service.rb:144
+
+- 2026-10-08 | [trap] | services | A list `base` with a per-day String passed LG validation, then `template_base + day_config` raised a raw `TypeError`; now matched by class at load | src/services/config_reader_service.rb:251
+
+- 2026-10-08 | [outcome] | services | Critic hardening: null-template guard, quoted/plain duplicate fix, mixed LG type check, array guard, tag-source first-writer, `Wrote <path>` echo | src/services/printer_service.rb:96
+
 - 2026-10-08 | [outcome] | services | Hardened validation: atomic writes, load-time placeholder checks, root/section type guards, file plus line numbers, and `day`/`birth_year`/`tag_order` in `validate!` | test/spec/run_spec.rb:83
 
 - 2026-10-08 | [outcome] | services | Load validation shipped | docs/discovery/ARCHIVE.md

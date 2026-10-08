@@ -141,8 +141,9 @@ class ConfigReaderService
       # `<<` is an alias-backed merge key, unsupported on the target Psych versions.
       next if name == '<<'
 
-      problems << "duplicate key '#{name}' in #{section} (line #{key.start_line + 1})" if seen[name]
-      seen[name] = true
+      identity = key.plain ? [:plain, name] : [:quoted, name]
+      problems << "duplicate key '#{name}' in #{section} (line #{key.start_line + 1})" if seen[identity]
+      seen[identity] = true
     end
   end
 
@@ -164,8 +165,17 @@ class ConfigReaderService
     config.each_key.map do |key|
       next if ALLOWED_TOP_LEVEL_KEYS.include?(key)
 
-      with_line("unknown top-level key '#{key}'", lines[key])
+      suggestion = allowed_key_suggestion(key)
+      message = "unknown top-level key '#{key}'"
+      message = "#{message} (did you mean '#{suggestion}'?)" if suggestion
+      with_line(message, lines[key])
     end.compact
+  end
+
+  def self.allowed_key_suggestion(key)
+    return nil unless key.is_a?(String)
+
+    ALLOWED_TOP_LEVEL_KEYS.find { |allowed| allowed.include?(key) || key.include?(allowed) }
   end
 
   def self.with_line(message, line)
@@ -227,15 +237,38 @@ class ConfigReaderService
     return ['lg_templates_config is required when mode is LG'] if lg_templates.nil?
     return [] unless lg_templates.is_a?(Hash)
 
-    LG_TEMPLATE_KEYS.map do |key|
+    problems = LG_TEMPLATE_KEYS.map do |key|
       line = lines["lg_templates_config.#{key}"]
       next with_line("lg_templates_config: missing required key '#{key}'", line) unless lg_templates.key?(key)
 
       value = lg_templates[key]
-      unless value.is_a?(String) || value.is_a?(Array)
-        with_line("lg_templates_config: '#{key}' must be a non-nil String or list", line)
-      end
+      with_line("lg_templates_config: '#{key}' must be a non-nil String or list", line) unless string_or_array?(value)
     end.compact
+
+    base = lg_templates[ConfigConstants::KEYS[:LG_TEMPLATE_BASE]]
+    return problems unless string_or_array?(base)
+
+    expected = base.is_a?(Array) ? 'must be a list' : 'must be a string'
+    lg_templates.each do |key, value|
+      next if key == ConfigConstants::KEYS[:LG_TEMPLATE_BASE]
+      next if string_or_array?(value) && value.instance_of?(base.class)
+      # A bad base/weekday/weekend value is already named by the required-key loop above.
+      next if !string_or_array?(value) && LG_TEMPLATE_KEYS.include?(key)
+
+      line = lines["lg_templates_config.#{key}"]
+      message = if string_or_array?(value)
+                  "lg_templates_config: '#{key}' #{expected}, matching 'base'"
+                else
+                  "lg_templates_config: '#{key}' must be a non-nil String or list"
+                end
+      problems << with_line(message, line)
+    end
+
+    problems
+  end
+
+  def self.string_or_array?(value)
+    value.is_a?(String) || value.is_a?(Array)
   end
 
   def self.task_problems(config, tasks, lines)
@@ -253,7 +286,7 @@ class ConfigReaderService
 
       method = task[ConfigConstants::KEYS[:METHOD]]
       known_method = valid_methods.include?(method)
-      problems << "#{label}: unknown method '#{method}'" unless known_method
+      problems << "#{label}: unknown method '#{method}' (valid: #{valid_methods.join(', ')})" unless known_method
       problems.concat(method_key_problems(label, method, task)) if known_method
       problems.concat(value_type_problems(label, method, task)) if known_method
       problems.concat(each_flag_problems(label, task))
@@ -316,7 +349,9 @@ class ConfigReaderService
       value = task[key]
       case key
       when ConfigConstants::KEYS[:MONTH]
-        problems << "#{label}: 'month' must be an Integer (got #{value.class})" unless value.is_a?(Integer)
+        unless value.is_a?(Integer)
+          problems << "#{label}: 'month' must be an Integer (got #{value.class}); write month: 12, not \"12\""
+        end
         problems << "#{label}: 'month' must be between 1 and 12" if value.is_a?(Integer) && !(1..12).cover?(value)
       when ConfigConstants::KEYS[:DAY]
         problems << "#{label}: 'day' must be an Integer (got #{value.class})" unless value.is_a?(Integer)
@@ -328,7 +363,10 @@ class ConfigReaderService
         problems << "#{label}: 'n_weeks' must be an Integer (got #{value.class})" unless value.is_a?(Integer)
         problems << "#{label}: 'n_weeks' must be at least 1" if value.is_a?(Integer) && value < 1
       when ConfigConstants::KEYS[:DAY_NAME]
-        problems << "#{label}: invalid day name '#{value}'" unless Year.valid_day_name?(value)
+        unless Year.valid_day_name?(value)
+          valid = Year::DAY_NAMES.join(', ')
+          problems << "#{label}: invalid day name '#{value}' (valid: #{valid}, capitalized)"
+        end
       end
     end
   end
@@ -348,6 +386,9 @@ class ConfigReaderService
     return ["#{label}: missing required key 'template'"] unless task.key?(template_key)
 
     value = task[template_key]
+    unless value.is_a?(String) || value.is_a?(Hash) || value.is_a?(Array)
+      return ["#{label}: 'template' must name a template or be an inline mapping/list"]
+    end
     return [] unless value.is_a?(String)
     # The missing/wrong section is reported once; without this every task repeats it.
     return [] unless templates.is_a?(Hash)
@@ -453,9 +494,10 @@ class ConfigReaderService
   end
   private_class_method :parse_config, :materialize, :read_contents, :line_index, :child_line_index,
                        :duplicate_key_problems, :mapping_duplicates, :structure_problems,
-                       :unknown_top_level_problems, :with_line, :section_type_problems, :template_value_problems,
-                       :tag_order_problems, :missing_template_section_problems, :missing_lg_section_problems,
-                       :task_problems, :task_label, :method_key_problems, :value_type_problems, :each_flag_problems,
+                       :unknown_top_level_problems, :allowed_key_suggestion, :with_line, :section_type_problems,
+                       :template_value_problems, :tag_order_problems, :missing_template_section_problems,
+                       :missing_lg_section_problems, :string_or_array?, :task_problems, :task_label,
+                       :method_key_problems, :value_type_problems, :each_flag_problems,
                        :birth_year_problems, :template_variable_problems, :template_problems,
                        :template_resolution_problems, :reserved_root_problems, :task_template, :resolved_template,
                        :substitute_variables, :substitute_element, :placeholder_problems,

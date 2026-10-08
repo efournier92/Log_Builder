@@ -122,6 +122,8 @@ class TaskPrinterService
 
   def update_content_array(template_placeholders, template_variables)
     template_placeholders.each do |template_string|
+      next unless template_string.is_a?(String)
+
       template_placeholder = get_placeholder(template_string)
 
       mapping = template_variables.detect { |m| m.keys[0] == template_placeholder }

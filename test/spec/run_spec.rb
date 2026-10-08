@@ -11,12 +11,13 @@ describe 'run.rb' do
   context 'given a valid DO argument with a month' do
     it 'writes DO_<year>_<month>.md with the expected date line' do
       Dir.mktmpdir do |dir|
-        _stdout, _stderr, status = run_cli(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', '2020', '1', dir)
+        stdout, _stderr, status = run_cli(TestConstants::CONFIG_FILES[:TEST_PATH], 'DO', '2020', '1', dir)
         file = File.join(dir, 'DO_2020_01.md')
 
         expect(status.exitstatus).to eq(0)
         expect(File.exist?(file)).to be true
         expect(File.read(file)).to include('## 2020-01-01 | Wednesday')
+        expect(stdout).to include('Wrote ')
       end
     end
   end
@@ -80,8 +81,8 @@ describe 'run.rb' do
     end
   end
 
-  context 'given a render-time failure with a pre-existing output file' do
-    it 'leaves the existing file untouched and no partial artifact' do
+  context 'given an LG config with mixed template types and a pre-existing output file' do
+    it 'rejects the config at load, reports to STDERR, and leaves the existing file untouched' do
       Dir.mktmpdir do |dir|
         config = File.join(dir, 'lg_config.yml')
         File.write(config, <<~YAML)
@@ -97,9 +98,10 @@ describe 'run.rb' do
         target = File.join(dir, 'LG_2020.md')
         File.write(target, "pre-existing\n")
 
-        _stdout, _stderr, status = run_cli(config, 'LG', '2020', 'ALL', dir)
+        _stdout, stderr, status = run_cli(config, 'LG', '2020', 'ALL', dir)
 
         expect(status.exitstatus).to_not eq(0)
+        expect(stderr).to include('lg_templates_config')
         expect(File.read(target)).to eq("pre-existing\n")
         expect(Dir.children(dir).sort).to eq(%w[LG_2020.md lg_config.yml])
       end

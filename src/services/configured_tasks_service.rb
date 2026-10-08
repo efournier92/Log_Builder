@@ -31,6 +31,12 @@ class ConfiguredTasksService
 
       template = template_key if template.nil? && (template_key.is_a?(Hash) || template_key.is_a?(Array))
 
+      if template.nil?
+        raise ConfigReaderService::InvalidConfigError,
+              format(ConfigConstants::ERRORS[:INVALID_CONFIG],
+                     "tasks_config['#{task_name}']: 'template' must name a template or be an inline mapping/list")
+      end
+
       template_variables = with_birth_year(config, method, template, template_variables, year)
 
       resolved = printer.resolve_template(template, template_variables)

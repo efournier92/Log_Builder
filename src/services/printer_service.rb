@@ -93,6 +93,7 @@ class PrinterService
     result = nil
     File.open(temp_path, 'w') { |out_file| result = yield out_file }
     File.rename(temp_path, path)
+    puts "Wrote #{path}"
     result
   ensure
     File.delete(temp_path) if File.exist?(temp_path)

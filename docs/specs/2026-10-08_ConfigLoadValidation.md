@@ -4,7 +4,7 @@
 
 - Target branch `config-load-validation`, cut from `main` at `7aa8276` ("Add Single-File Build Bundle (#8)").
 - This spec starts from the merged single-file build. The new validator file must be added to `SOURCE_ORDER` in `build.rb:14-28`, or the Bundle will not carry it and the runtime will fail on `require`.
-- This supersedes the repository TODO at `README.md:729-733` ("Validate the config at load: collect all problems, print one message, exit 1") and the `TEXT:`/`TASK:` debug-rescue item.
+- This supersedes the repository TODOs at `README.md:728-731` on `main` ("Warn of duplicate keys in YAML" and "Add begin/rescue blocks to all YAML-related methods", with its nested "Warn user of improper configuration" and "Do not stop running on improper configuration") and the `TEXT:`/`TASK:` debug-rescue item.
 - The `builds/` privacy note and the deferred history rewrite are untouched.
 
 ## Context And Motivation
@@ -288,3 +288,18 @@ A product review after the first implementation found the pass could still destr
 - A render error reached through `TagMergeService.render` names the owning task: each root carries its source task name onto the day, and the render printer is labelled with it.
 - Coverage is standardized in the one load pass: `day` is range-checked `1..31`; `birth_year` must be an Integer and only with `to_specific_date`; `tag_order_config` entries are Strings with no duplicates; `template_variables` must be a list. The birth-year future-year and `{{AGE}}`-required checks stay in `ConfiguredTasksService` because they need the build year, but now raise `ConfigReaderService::InvalidConfigError` so the report is consistent.
 - Values the review judged previously working (`is_each` other than `true` or `false`, and integral Floats) stay rejected per the decisions at `:141` and `:146`; that remains the one sanctioned tightening.
+
+## Critic Follow-Up
+
+A second review after the hardening pass found seven defects. All seven are fixed on the `config-load-validation` branch.
+
+- FIX 1: `template_problems` reports every `template` value that is not a String, Hash, or Array with `"<label>: 'template' must name a template or be an inline mapping/list"`, so a null or Integer `template` no longer validates clean and silently attaches nothing (`src/services/config_reader_service.rb`).
+- FIX 1b: `ConfiguredTasksService#add_configured_tasks` raises `ConfigReaderService::InvalidConfigError` with the same wording when the resolved template is still nil, as a runtime guard for the bundle (`src/services/configured_tasks_service.rb`).
+- FIX 2: `mapping_duplicates` keys `seen` by quotedness as well as text, so a plain `1:` and a quoted `"1":` are distinct instead of a false duplicate (`src/services/config_reader_service.rb`).
+- FIX 3: `missing_lg_section_problems` requires every other `lg_templates_config` value to be a String or Array with the same class as `base`, so a per-day String against a list `base` fails at load instead of raising a raw `TypeError` (`src/services/config_reader_service.rb`).
+- FIX 4: adds message hints for an invalid day name, a non-Integer month, an unknown method, and a near-miss top-level key (`src/services/config_reader_service.rb`).
+- FIX 5: `update_content_array` skips a non-String element, so a nested Array cannot raise a raw `TypeError` in `get_placeholder` (`src/services/task_printer_service.rb`).
+- FIX 6: `attach` keeps the first writer in `day.tag_sources`, so a merged same-named root is attributed to its lowest-occurrence task (`src/services/add_task_service.rb`).
+- FIX 7: `atomic_write` echoes `Wrote <path>` to STDOUT once after a successful rename, covering DO year, DO month, and LG (`src/services/printer_service.rb`).
+
+The `main` README item "Do not stop running on improper configuration" is superseded: the tool now stops with one report and a non-zero exit instead of continuing past an improper configuration.
