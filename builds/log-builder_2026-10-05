@@ -4,6 +4,7 @@
 require 'yaml'
 require 'fileutils'
 
+# src/constants/app_constants.rb
 module AppConstants
 MODES = {
 DO: 'DO',
@@ -30,6 +31,7 @@ INVALID_CONFIG_FILE: 'Invalid config file. Exiting...'
 }.freeze
 end
 
+# src/constants/config_constants.rb
 module ConfigConstants
 KEYS = {
 TASKS: 'tasks_config',
@@ -79,6 +81,7 @@ FILE_NOT_FOUND: 'File not found: %s'
 }.freeze
 end
 
+# src/models/day.rb
 class Day
 attr_accessor :tag_roots
 attr_reader :year, :month, :month_day, :name
@@ -98,6 +101,7 @@ def tasks
 end
 end
 
+# src/models/year.rb
 class Year
 attr_accessor :days
 attr_reader :year_number, :days_in_months, :config_file
@@ -174,6 +178,7 @@ add_task_service.add_configured_tasks(self)
 end
 end
 
+# src/services/config_reader_service.rb
 class ConfigReaderService
 class FileNotFoundError < StandardError; end
 def initialize(config_file)
@@ -202,6 +207,7 @@ def tag_order
 end
 end
 
+# src/services/task_printer_service.rb
 class TaskPrinterService
 attr_reader :output
 def initialize(config_file)
@@ -340,6 +346,7 @@ string_with_placeholder.gsub!(placeholder, content)
 end
 end
 
+# src/services/tag_merge_service.rb
 class TagMergeService
 def self.roots_from_template(template)
 return [] if template.nil?
@@ -448,6 +455,7 @@ def self.leaf_node(name)
 end
 end
 
+# src/services/add_task_service.rb
 class AddTaskService
 def initialize(tag_order = [])
 @tag_order = tag_order
@@ -652,6 +660,7 @@ end
 end
 end
 
+# src/services/printer_service.rb
 class PrinterService
 DEFAULT_OUTPUT_DIR = './'.freeze
 def initialize(config_file, output_dir = DEFAULT_OUTPUT_DIR)
@@ -727,6 +736,7 @@ end
 end
 end
 
+# src/services/configured_tasks_service.rb
 class ConfiguredTasksService
 def add_configured_tasks(year)
 config_file = year.config_file
@@ -780,6 +790,7 @@ end
 end
 end
 
+# src/services/input_validation_service.rb
 def valid_config_file?(config_file)
 config_file.is_a?(String) && File.exist?(config_file)
 end
@@ -821,6 +832,7 @@ month.to_i
 end
 end
 
+# src/modules/log_builder.rb
 class LogBuilder
 attr_reader :mode, :year_number, :month
 def initialize(config_file, mode, year_number, month, output_directory = nil)
@@ -876,6 +888,7 @@ print AppConstants::INPUT_PROMPTS[:MONTH]
 end
 end
 
+# src/run.rb
 arguments = ARGV
 config_file = arguments[0]
 mode = arguments[1]

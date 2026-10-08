@@ -163,7 +163,7 @@ The header carries no date, so the Bundle content is deterministic. It deliberat
 
 ### Source Transformation
 
-Apply this to each file in `SOURCE_ORDER`, then concatenate in order with a single blank line between files.
+Apply this to each file in `SOURCE_ORDER`, then concatenate in order with a single blank line between files, prefixing each file's stripped body with a marker comment `# <relative path>` (for example `# src/models/day.rb`) so a Bundle backtrace frame maps back to its source file.
 
 1. Read the file as UTF-8.
 2. Remove every line whose stripped text matches `/\Arequire_relative\b/`.
@@ -212,7 +212,7 @@ AllCops:
   - Remove the Ruby Packer fork link and the download-requirements list.
   - State that `ruby build.rb` produces `builds/log-builder_YYYY-MM-DD`, a single self-contained Ruby file.
   - State the runtime requirement: any stock Ruby 2.6 or newer, with only the `yaml` and `fileutils` standard libraries. State that rebuilding from source needs Ruby 3.3 or newer for `prism`.
-  - Give the run and install forms: run `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml` (the repo sample is `test/test_config.yml`); install with `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/log-builder` into a directory on `PATH`, noting `sudo` only for system directories such as `/usr/local/bin`.
+  - Give the run and install forms: run `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml` (the repo sample is `test/test_config.yml`); install the dated file with `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/` then `ln -sf ~/bin/log-builder_YYYY-MM-DD ~/bin/log-builder`, into a directory on `PATH`, noting `sudo` only for system directories such as `/usr/local/bin`.
   - Note that the generated file is not edited by hand and is regenerated with `ruby build.rb`.
 - Add a `Version History` entry under the existing `### 2026-10-05` heading describing the single-file build and the retirement of the Ruby Packer binary path.
 
@@ -254,6 +254,7 @@ Requires `./build`, `open3`, `tmpdir`, `fileutils`, `date`. Define `ROOT = File.
 - Happy path, type: `LogBuilderBundler.build(ROOT)` returns a `String`.
 - Happy path, requires: the Bundle contains exactly one occurrence of `require 'yaml'` and exactly one of `require 'fileutils'`, each appearing before the first line beginning with `module` or `class`.
 - Happy path, no project requires: the Bundle matches neither `/require_relative/` nor `/require\s+['"]\.\//`.
+- Happy path, section markers: for every path in `SOURCE_ORDER`, the Bundle contains a line exactly equal to `# <path>`, so a backtrace frame maps to its source file.
 - Determinism: two calls to `LogBuilderBundler.build(ROOT)` return equal strings, proving no timestamp leaks into content.
 - Syntax: write the Bundle to a `Dir.mktmpdir` file; `Open3.capture3('ruby', '-c', path)` exits `0` and prints `Syntax OK`.
 - `write` path: `Dir.mktmpdir` with `FileUtils.cp_r` of `src/`; `LogBuilderBundler.write(tmp, date: Date.new(2026, 1, 1))` returns `<tmp>/builds/log-builder_2026-01-01`, writes bytes equal to `bundle`, sets mode `0755`, and a second call with the same date overwrites the file.
@@ -277,21 +278,21 @@ Expected suite result after the change: the current 332 examples plus the new bu
 
 ## Summary Of Changes
 
-- [ ] `build.rb` added at the repository root with `LogBuilderBundler.build`, `LogBuilderBundler.write`, the `SOURCE_ORDER`, the deterministic header, and the Prism-based strip.
-- [ ] `build.rb` records source requires and raises when they differ from `HEADER_REQUIRES`.
-- [ ] `build_package` deleted.
-- [ ] `src/services/file_parser_service.rb` moved to `test/support/file_parser.rb`.
-- [ ] `src/services/tag_merge_service.rb:127,131` hash value omission expanded to `name: name` so the Bundle parses on Ruby 2.6.
-- [ ] `test/spec/services/file_parser_service_spec.rb:1` require updated.
-- [ ] `test/e2e/e2e_spec.rb:1` require updated.
-- [ ] `test/spec/build_spec.rb` added with the header, requires, determinism, syntax, the `write` path, drift, and three equivalence cases.
-- [ ] `.gitignore` no longer ignores `builds/`.
-- [ ] `.rubocop.yml` excludes `builds/**/*`.
-- [ ] `README.md` Build Packaging rewritten and the Ruby Packer references removed.
-- [ ] `README.md` Version History entry added under `### 2026-10-05`.
-- [ ] `builds/log-builder_<date>` Build Snapshot generated and committed.
-- [ ] `bundle exec rspec` green.
-- [ ] `bundle exec rubocop` clean.
+- [x] `build.rb` added at the repository root with `LogBuilderBundler.build`, `LogBuilderBundler.write`, the `SOURCE_ORDER`, the deterministic header, and the Prism-based strip.
+- [x] `build.rb` records source requires and raises when they differ from `HEADER_REQUIRES`.
+- [x] `build_package` deleted.
+- [x] `src/services/file_parser_service.rb` moved to `test/support/file_parser.rb`.
+- [x] `src/services/tag_merge_service.rb:127,131` hash value omission expanded to `name: name` so the Bundle parses on Ruby 2.6.
+- [x] `test/spec/services/file_parser_service_spec.rb:1` require updated.
+- [x] `test/e2e/e2e_spec.rb:1` require updated.
+- [x] `test/spec/build_spec.rb` added with the header, requires, determinism, syntax, the `write` path, drift, and three equivalence cases.
+- [x] `.gitignore` no longer ignores `builds/`.
+- [x] `.rubocop.yml` excludes `builds/**/*`.
+- [x] `README.md` Build Packaging rewritten and the Ruby Packer references removed.
+- [x] `README.md` Version History entry added under `### 2026-10-05`.
+- [x] `builds/log-builder_<date>` Build Snapshot generated and committed.
+- [x] `bundle exec rspec` green.
+- [x] `bundle exec rubocop` clean.
 
 ## Verification Steps
 

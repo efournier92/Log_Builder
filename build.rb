@@ -60,7 +60,7 @@ module LogBuilderBundler # rubocop:disable Metrics/ModuleLength
     bodies = SOURCE_ORDER.map do |source|
       body, names = strip_source(File.read(File.join(root, source), encoding: 'UTF-8'))
       names.each { |name| requires << name unless requires.include?(name) }
-      body
+      "# #{source}\n#{body}"
     end
 
     message = "Recorded requires #{requires.inspect} do not match HEADER_REQUIRES #{HEADER_REQUIRES.inspect}; " \

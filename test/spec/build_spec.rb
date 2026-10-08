@@ -59,6 +59,12 @@ describe 'LogBuilderBundler' do
     expect(bundle).to_not match(%r{require\s+['"]\./})
   end
 
+  it 'labels each source section for backtrace mapping' do
+    LogBuilderBundler::SOURCE_ORDER.each do |source|
+      expect(bundle).to include("# #{source}\n")
+    end
+  end
+
   it 'is deterministic across calls' do
     expect(LogBuilderBundler.build(ROOT)).to eq(bundle)
   end
