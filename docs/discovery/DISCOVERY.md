@@ -4,6 +4,10 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [outcome] | services | Load validation shipped: `validate!` raises `InvalidConfigError` with every problem, reported to STDERR and exit 1 before any write; suite 367/0, rubocop 30/0 | docs/specs/2026-10-08_ConfigLoadValidation.md
+
+- 2026-10-08 | [trap] | build | `build_spec.rb:97` compares the fresh Bundle to the newest git-tracked `builds/log-builder_*`; any `src/` change fails it until the new snapshot is committed | test/spec/build_spec.rb:97
+
 - 2026-10-08 | [decision] | services | Config load validation approved: one pass collects all problems to STDERR and exits 1 before any file is written; method whitelist from `AddTaskService.instance_methods(false)`; per-method conditional required keys; strict `Integer` types; unknown top-level keys rejected; missing sections error only when mode and tasks need them; a String template name must resolve while inline Hash/Array templates pass; a surviving `{{...}}` except `{{TASK.` is an error | docs/specs/2026-10-08_ConfigLoadValidation.md
 
 - 2026-10-08 | [decision] | services | The String-missing-template fallback in `MergeSameDayRootTags.md:157` is superseded: a String `template` naming no entry becomes an `INVALID_CONFIG` error, not a leaf; inline Hash/Array templates keep working | docs/specs/2026-10-08_ConfigLoadValidation.md
@@ -60,8 +64,6 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 - 2026-10-04 | [outcome] | services | Fixed the merge render perf trap by deferring ConfigReaderService construction in TaskPrinterService#print_internal into the placeholder branch (it was built for every internal node); padded 154KB config with a daily internal task went 8.9s to 0.11s, full suite 3.77s to 0.80s, and a placeholder-bearing daily task stays 0.10s; also froze canonical children arrays and tightened the collision e2e to exact-match | src/services/task_printer_service.rb:44; src/services/tag_merge_service.rb:93
 
-- 2026-10-04 | [trap] | services | TagMergeService.render builds a fresh TaskPrinterService per root and print_internal lazily YAML.load_file per printer, so a large config with a frequent internal task re-parses the file once per root per day; measured 8.9s vs ~0.04s pre-merge on a 154KB padded config with one to_each_day internal task; superseded 2026-10-04 | src/services/tag_merge_service.rb:65; src/services/task_printer_service.rb:43
-
 - 2026-10-04 | [outcome] | services | Implemented same-day root tag merging per the spec: TagMergeService builds canonical trees and merges same-named roots recursively with incoming-first children and exact-leaf dedupe, rendering each root through a fresh TaskPrinterService; AddTaskService#attach keeps per-day tag_roots independent; four preexisting collision-day assertions in configured_tasks_service_spec were updated to post-merge output as the e2e note requires; full suite 259 examples 0 failures, rubocop 0 offenses | src/services/tag_merge_service.rb:1; test/spec/services/tag_merge_service_spec.rb:1
 
 - 2026-10-04 | [decision] | services | Same-day root tags merge by exact name: incoming children prepended, recursive with exact-leaf dedupe, merged root keeps its bottom-most occurrence slot, internal beats leaf with the leaf kept as a child, always-on and silent; structured trees per day rendered through the existing printer | docs/specs/2026-10-04_MergeSameDayRootTags.md
@@ -72,7 +74,6 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 - 2026-10-04 | [finding] | repo | Commit history exposes the author email (`efournier92@gmail.com`) on 630 commits and 7 routine-naming subjects; masking needs a rewrite, not done | `git log --all --format='%ae' | sort -u`
 - 2026-10-04 | [outcome] | repo | Test expansion final: 216 examples, 0 failures, 1 pending; src coverage 99.43% line / 91.47% branch | `bundle exec rspec`; `RUBYOPT="-r/tmp/lb_cov.rb" bundle exec rspec`
 - 2026-10-04 | [outcome] | services | Fixed `print_do_month` to filter by year and month | src/services/printer_service.rb:59
-- 2026-10-04 | [trap] | services | `get_date_hash_from_do_file` passes an index as a `slice!` length and can hang when a date line has no trailing newline; superseded 2026-10-04 | src/services/file_parser_service.rb:13,30
 - 2026-10-04 | [outcome] | services | Fixed `configured_template_by_name` with a nil guard on the missing section | src/services/config_reader_service.rb:24
 - 2026-10-04 | [finding] | services | `return if tags.nil?` is unreachable because `configured_tasks` coerces a missing key to `{}` | src/services/configured_tasks_service.rb:14
 - 2026-10-04 | [trap] | services | `{{TASK.*}}` composed templates are never resolved; exact lookup only, so they pass through literally | src/services/task_printer_service.rb:48

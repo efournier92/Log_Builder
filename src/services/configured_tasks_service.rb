@@ -18,10 +18,17 @@ class ConfiguredTasksService
     tags.each_value do |config|
       printer = TaskPrinterService.new(config_file)
       method = config[ConfigConstants::KEYS[:METHOD]]
-      template = reader.configured_task_templates[config[ConfigConstants::KEYS[:TEMPLATE]]]
+      template_key = config[ConfigConstants::KEYS[:TEMPLATE]]
+      templates = reader.configured_task_templates
+      template = templates.is_a?(Hash) ? templates[template_key] : nil
       template_variables = config[ConfigConstants::KEYS[:TEMPLATE_VARIABLES]]
 
-      template = config[ConfigConstants::KEYS[:TEMPLATE]] if template.nil?
+      if template.nil? && template_key.is_a?(String)
+        raise ConfigReaderService::InvalidConfigError,
+              format(ConfigConstants::ERRORS[:INVALID_CONFIG], "no template named '#{template_key}'")
+      end
+
+      template = template_key if template.nil? && (template_key.is_a?(Hash) || template_key.is_a?(Array))
 
       template_variables = with_birth_year(config, method, template, template_variables, year)
 
@@ -41,7 +48,7 @@ class ConfiguredTasksService
 
     birth_year = config[ConfigConstants::KEYS[:BIRTH_YEAR]]
 
-    unless method == ConfigConstants::CONFIGURED_TASK_METHODS[:SPECIFIC_DATE]
+    unless method == ConfigConstants::BIRTH_YEAR_METHODS[:SPECIFIC_DATE]
       raise format(ConfigConstants::ERRORS[:INVALID_CONFIG], 'birth_year is only supported with to_specific_date')
     end
 

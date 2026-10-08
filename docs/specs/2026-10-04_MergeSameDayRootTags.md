@@ -156,6 +156,8 @@ config[ConfigConstants::KEYS[:TAG]] = TagMergeService.roots_from_template(resolv
 
 Add `require_relative './tag_merge_service'` near the other requires. The `template` fallback at `:22` changes behavior and this is intended: when a configured task names a template that is missing from `task_templates_config` and supplies no inline template, `template` stays the String name, which previously raised inside the printer (`String#each`) and now becomes a single leaf node named by that string through `roots_from_template`. Add the fallback test named in the test plan.
 
+> Superseded by `docs/specs/2026-10-08_ConfigLoadValidation.md`: a String `template` naming no entry now raises `ConfigReaderService::InvalidConfigError` at load instead of rendering a leaf; inline Hash/Array templates keep working.
+
 ### `AddTaskService` Changes
 
 Add `require_relative './tag_merge_service'`. Add a private helper:

@@ -1,5 +1,5 @@
 tasks_config:
-templates_config:
+task_templates_config:
   Holiday:
     Holiday:
       - '{{CONTENT}}'

@@ -33,7 +33,7 @@ module ConfigConstants
     AGE: '{{AGE}}'
   }.freeze
 
-  CONFIGURED_TASK_METHODS = {
+  BIRTH_YEAR_METHODS = {
     SPECIFIC_DATE: 'to_specific_date',
   }.freeze
 

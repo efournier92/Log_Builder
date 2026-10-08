@@ -437,12 +437,20 @@ describe TaskPrinterService do
     end
 
     context 'given a placeholder that resolves to no configured template' do
-      it 'rescues and appends the placeholder as a leaf' do
+      it 'raises an InvalidConfigError naming the reference' do
         node = { '{{Missing_Template}}' => nil }
 
-        expect { @printer.print_internal(node) }.to output(/TEXT: \{\{Missing_Template\}\}/).to_stdout
+        expect { @printer.print_internal(node) }.to raise_error(ConfigReaderService::InvalidConfigError,
+                                                                /no template named 'Missing_Template'/)
+      end
+    end
 
-        expect(@printer.output).to eql('{{Missing_Template}},')
+    context 'given a placeholder whose configured template is not a mapping' do
+      it 'raises an InvalidConfigError' do
+        node = { '{{1_Dimensional}}' => nil }
+
+        expect { @printer.print_internal(node) }.to raise_error(ConfigReaderService::InvalidConfigError,
+                                                                /is not a mapping/)
       end
     end
   end

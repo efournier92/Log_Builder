@@ -64,4 +64,19 @@ describe 'run.rb' do
       end
     end
   end
+
+  context 'given a malformed config' do
+    it 'exits non-zero, reports to STDERR, and writes no output file' do
+      Dir.mktmpdir do |dir|
+        config = File.join(dir, 'bad_config.yml')
+        File.write(config, "tasks_config:\n  Bad:\n    method: to_nope\n    template: T\n")
+
+        _stdout, stderr, status = run_cli(config, 'DO', '2020', 'ALL', dir)
+
+        expect(status.exitstatus).to_not eq(0)
+        expect(stderr).to include("unknown method 'to_nope'")
+        expect(Dir.children(dir)).to eq([File.basename(config)])
+      end
+    end
+  end
 end
