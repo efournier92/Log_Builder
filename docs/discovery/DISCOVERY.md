@@ -4,6 +4,8 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [outcome] | services | Hardened validation: atomic writes, load-time placeholder checks, root/section type guards, file plus line numbers, and `day`/`birth_year`/`tag_order` in `validate!` | test/spec/run_spec.rb:83
+
 - 2026-10-08 | [outcome] | services | Load validation shipped: `validate!` raises `InvalidConfigError` with every problem, reported to STDERR and exit 1 before any write; suite 367/0, rubocop 30/0 | docs/specs/2026-10-08_ConfigLoadValidation.md
 
 - 2026-10-08 | [trap] | build | `build_spec.rb:97` compares the fresh Bundle to the newest git-tracked `builds/log-builder_*`; any `src/` change fails it until the new snapshot is committed | test/spec/build_spec.rb:97

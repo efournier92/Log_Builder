@@ -79,4 +79,30 @@ describe 'run.rb' do
       end
     end
   end
+
+  context 'given a render-time failure with a pre-existing output file' do
+    it 'leaves the existing file untouched and no partial artifact' do
+      Dir.mktmpdir do |dir|
+        config = File.join(dir, 'lg_config.yml')
+        File.write(config, <<~YAML)
+          lg_templates_config:
+            base:
+              - ""
+            weekday:
+              - ""
+            weekend:
+              - ""
+            monday: not_a_list
+        YAML
+        target = File.join(dir, 'LG_2020.md')
+        File.write(target, "pre-existing\n")
+
+        _stdout, _stderr, status = run_cli(config, 'LG', '2020', 'ALL', dir)
+
+        expect(status.exitstatus).to_not eq(0)
+        expect(File.read(target)).to eq("pre-existing\n")
+        expect(Dir.children(dir).sort).to eq(%w[LG_2020.md lg_config.yml])
+      end
+    end
+  end
 end

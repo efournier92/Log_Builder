@@ -253,6 +253,25 @@ describe LogBuilder do
     end
   end
 
+  describe '#build_file' do
+    context 'given a malformed config' do
+      it 'reports after the mode prompt and never asks for the year' do
+        Dir.mktmpdir do |dir|
+          config = File.join(dir, 'bad.yml')
+          File.write(config, "tasks_config:\n  Bad:\n    method: to_nope\n    template: T\n")
+          builder = LogBuilder.new(config, '', nil, nil, dir)
+          $stdin = StringIO.new("DO\n")
+
+          expect { builder.build_file }.to raise_error(SystemExit) do |_error|
+            expect(builder.year_number).to be_nil
+          end
+
+          $stdin = STDIN
+        end
+      end
+    end
+  end
+
   context 'given proper inputs' do
     before :all do
       @output_dir = TestConstants::OUTPUT[:DIRECTORY]

@@ -23,7 +23,9 @@ class LogBuilder
   end
 
   def build_file
-    collect_user_input
+    collect_mode_input
+    validate_config
+    collect_date_input
     build_by_mode
   rescue ConfigReaderService::InvalidConfigError => e
     warn e.message
@@ -31,15 +33,26 @@ class LogBuilder
   end
 
   def collect_user_input
-    prompt_for_mode_input until valid_mode?(@mode)
+    collect_mode_input
 
+    collect_date_input
+  end
+
+  def collect_mode_input
+    prompt_for_mode_input until valid_mode?(@mode)
+  end
+
+  def collect_date_input
     prompt_for_year_input until valid_year_number?(@year_number)
 
     prompt_for_month_input until valid_month?(@month, @mode)
   end
 
-  def build_by_mode
+  def validate_config
     ConfigReaderService.validate!(@config_file, mode: @mode)
+  end
+
+  def build_by_mode
     printer_service = PrinterService.new(@config_file, @output_directory)
     do_year = Year.new(@year_number, @config_file)
 

@@ -275,3 +275,15 @@ Expected suite result: 346 examples plus the new cases, 0 failures, 0 pending.
 ## Open Questions
 
 None. Resolved decisions: strict Integer typing, the narrow String-only template error with the inline and `{{TASK.` exemptions, keep the unknown-top-level check with the fixture fix, error on unresolved variables, and the reader-unit plus run_spec seams. Assumptions the user may veto: `month` range `1..12` and `nth_day` range `1..31` are errors, and `n_weeks` must be `>= 1`.
+
+## Post-Review Hardening
+
+A product review after the first implementation found the pass could still destroy an existing output file and could itself raise raw backtraces. The following supersedes the matching decisions above.
+
+- Output writes are atomic: each printer writes a sibling temp file and renames it over the target only on success, so a render-time failure leaves an existing file untouched and no partial artifact.
+- The load pass also rejects a surviving non-`{{TASK.` placeholder and a `{{Name}}` reference that does not resolve to a mapping, so those fail before any write.
+- Root and section type guards: the root must be a mapping; `tasks_config`, `task_templates_config`, and `lg_templates_config` must be Hash when present; `tag_order_config` must be an Array; each named template must be a Hash or Array; the LG `base`, `weekday`, and `weekend` values must be non-nil String or Array.
+- Validation runs after the mode prompt and before the year and month prompts, so the user never answers every prompt before a report.
+- The report includes the config file path and 1-based line numbers where the AST provides them, and suppresses the per-task `no template named` cascade when `task_templates_config` is missing.
+- Coverage is standardized in the one load pass: `day` is range-checked `1..31`; `birth_year` must be an Integer and only with `to_specific_date`; `tag_order_config` entries are Strings with no duplicates; `template_variables` must be a list. The birth-year future-year and `{{AGE}}`-required checks stay in `ConfiguredTasksService` because they need the build year, but now raise `ConfigReaderService::InvalidConfigError` so the report is consistent.
+- Values the review judged previously working (`is_each` other than `true` or `false`, and integral Floats) stay rejected per the decisions at `:141` and `:146`; that remains the one sanctioned tightening.

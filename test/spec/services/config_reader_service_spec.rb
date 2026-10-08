@@ -192,7 +192,7 @@ describe ConfigReaderService do
               template: T
         YAML
 
-        expect(validation_problem(contents)).to include("duplicate key 'tasks_config' in top level")
+        expect(validation_problem(contents)).to include("duplicate key 'tasks_config' in top level (line 5)")
       end
     end
 
@@ -418,7 +418,7 @@ describe ConfigReaderService do
     end
 
     context 'given multiple problems' do
-      it 'reports them all in one message' do
+      it 'reports them all in one message without cascading no-template lines' do
         contents = <<~YAML
           tasks_config:
             Bad:
@@ -430,6 +430,233 @@ describe ConfigReaderService do
 
         expect(problem).to include('task_templates_config is required when tasks_config is present')
         expect(problem).to include("unknown method 'to_nope'")
+        expect(problem).not_to include('no template named')
+      end
+
+      it 'names the config file in the report header' do
+        expect(validation_problem("tasks_config: []\n")).to include('config.yml')
+      end
+    end
+
+    context 'given a root that is not a mapping' do
+      it 'reports the root instead of raising a TypeError' do
+        expect(validation_problem("- a\n- b\n")).to include('root must be a mapping')
+      end
+    end
+
+    context 'given a section with the wrong type' do
+      it 'reports tasks_config as a mapping' do
+        expect(validation_problem("tasks_config: []\n")).to include('tasks_config must be a mapping')
+      end
+
+      it 'reports task_templates_config as a mapping' do
+        expect(validation_problem("task_templates_config: []\n"))
+          .to include('task_templates_config must be a mapping')
+      end
+
+      it 'reports lg_templates_config as a mapping without crashing' do
+        expect(validation_problem("lg_templates_config: []\n", validation_mode: 'LG'))
+          .to include('lg_templates_config must be a mapping')
+      end
+
+      it 'reports a named template that is neither mapping nor list' do
+        contents = <<~YAML
+          task_templates_config:
+            T: not_a_template
+        YAML
+
+        expect(validation_problem(contents))
+          .to include("task_templates_config['T']: template must be a mapping or a list")
+      end
+    end
+
+    context 'given malformed lg template values' do
+      it 'reports an inner key present but nil' do
+        contents = <<~YAML
+          lg_templates_config:
+            base:
+              - ""
+            weekday:
+            weekend:
+              - ""
+        YAML
+
+        expect(validation_problem(contents, validation_mode: 'LG'))
+          .to include("lg_templates_config: 'weekday' must be a non-nil String or list")
+      end
+    end
+
+    context 'given tag_order problems' do
+      it 'reports a non-list tag_order_config' do
+        expect(validation_problem("tag_order_config: {}\n")).to include('tag_order_config must be a list')
+      end
+
+      it 'reports a non-string entry' do
+        expect(validation_problem("tag_order_config:\n  - 3\n"))
+          .to include('tag_order_config entries must be strings')
+      end
+
+      it 'reports a duplicate entry, including the reserved marker' do
+        expect(validation_problem("tag_order_config:\n  - A\n  - A\n"))
+          .to include('duplicate tag_order_config entry: A')
+      end
+
+      it 'accepts the reserved marker as the ordering sentinel' do
+        contents = "tag_order_config:\n  - A\n  - '~~OTHER~~'\n  - B\n"
+
+        in_tmp_config(contents) { |path| expect(ConfigReaderService.validate!(path, mode: 'DO')).to be_a(Hash) }
+      end
+    end
+
+    context 'given a day outside the calendar' do
+      it 'reports the range error' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - X
+          tasks_config:
+            Bad:
+              method: to_specific_date
+              month: 1
+              day: 32
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include("'day' must be between 1 and 31")
+      end
+    end
+
+    context 'given birth_year problems' do
+      it 'reports a non-Integer birth_year' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - '{{AGE}}'
+          tasks_config:
+            Bad:
+              method: to_specific_date
+              month: 1
+              day: 3
+              birth_year: "1976"
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include("'birth_year' must be an Integer")
+      end
+
+      it 'reports birth_year on a method that does not support it' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              birth_year: 1976
+              template: T
+        YAML
+
+        expect(validation_problem(contents))
+          .to include("'birth_year' is only supported with to_specific_date")
+      end
+
+      it 'accepts a valid birth_year with the age placeholder' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - '{{AGE}}'
+          tasks_config:
+            Bad:
+              method: to_specific_date
+              month: 1
+              day: 3
+              birth_year: 1976
+              template: T
+        YAML
+
+        in_tmp_config(contents) { |path| expect(ConfigReaderService.validate!(path, mode: 'DO')).to be_a(Hash) }
+      end
+    end
+
+    context 'given template_variables of the wrong type' do
+      it 'reports it as a list error' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: T
+              template_variables: nope
+        YAML
+
+        expect(validation_problem(contents)).to include("'template_variables' must be a list")
+      end
+    end
+
+    context 'given an unresolved placeholder in a task template' do
+      it 'reports the placeholder at load' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              - 'Name({{NAME}},)'
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include('unresolved placeholder')
+      end
+    end
+
+    context 'given a composed template reference' do
+      it 'reports a reference that does not resolve' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              '{{Missing}}': null
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include("no template named 'Missing'")
+      end
+
+      it 'reports a reference whose target is not a mapping' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              '{{List}}': null
+            List:
+              - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include("template 'List' is not a mapping")
+      end
+    end
+
+    context 'given a template root using the reserved marker' do
+      it 'reports the reserved root at load' do
+        contents = <<~YAML
+          task_templates_config:
+            T:
+              '~~OTHER~~':
+                - X
+          tasks_config:
+            Bad:
+              method: to_each_day
+              template: T
+        YAML
+
+        expect(validation_problem(contents)).to include("tag name is reserved: #{ConfigConstants::TAG_ORDER_MARKER}")
       end
     end
   end

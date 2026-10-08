@@ -44,7 +44,7 @@ class PrinterService
   def print_do_year(do_year)
     make_out_dir
     year = do_year.year_number
-    File.open(do_file_name(year), 'w') do |out_file|
+    atomic_write(do_file_name(year)) do |out_file|
       do_year.days.each do |day|
         print_tasks(out_file, day)
       end
@@ -54,7 +54,7 @@ class PrinterService
   def print_do_month(do_year, month)
     make_out_dir
     year = do_year.year_number
-    File.open(do_file_name(year, month), 'w') do |out_file|
+    atomic_write(do_file_name(year, month)) do |out_file|
       do_year.days.each do |day|
         print_tasks(out_file, day) if day.year == year && day.month == month
       end
@@ -78,12 +78,23 @@ class PrinterService
   def print_lg(do_year)
     make_out_dir
     year = do_year.year_number
-    File.open(lg_file_name(year), 'w') do |out_file|
+    atomic_write(lg_file_name(year)) do |out_file|
       do_year.days.each do |day|
         out_file.puts(date_line(day))
         day_template = get_template_by_day(day.name)
         out_file.puts(day_template)
       end
     end
+  end
+
+  # Write via a sibling temp file so a render failure never truncates the existing target.
+  def atomic_write(path)
+    temp_path = "#{path}.tmp.#{Process.pid}"
+    result = nil
+    File.open(temp_path, 'w') { |out_file| result = yield out_file }
+    File.rename(temp_path, path)
+    result
+  ensure
+    File.delete(temp_path) if File.exist?(temp_path)
   end
 end

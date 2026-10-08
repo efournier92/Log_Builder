@@ -5,8 +5,9 @@ require_relative '../constants/app_constants'
 class TaskPrinterService
   attr_reader :output
 
-  def initialize(config_file)
+  def initialize(config_file, task_label = nil)
     @config_file = config_file
+    @task_label = task_label
     @output = ''
     @current_depth = 0
     @current_node = 0
@@ -74,8 +75,8 @@ class TaskPrinterService
   end
 
   def raise_invalid_config(problem)
-    raise ConfigReaderService::InvalidConfigError,
-          format(AppConstants::ERROR_MESSAGES[:INVALID_CONFIG_REPORT], problem)
+    problem = "tasks_config['#{@task_label}']: #{problem}" if @task_label
+    raise ConfigReaderService::InvalidConfigError, ConfigReaderService.report(@config_file, [problem])
   end
 
   def append_internal(text)
