@@ -4,6 +4,10 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [decision] | services | Config load validation approved: one pass collects all problems to STDERR and exits 1 before any file is written; method whitelist from `AddTaskService.instance_methods(false)`; per-method conditional required keys; strict `Integer` types; unknown top-level keys rejected; missing sections error only when mode and tasks need them; a String template name must resolve while inline Hash/Array templates pass; a surviving `{{...}}` except `{{TASK.` is an error | docs/specs/2026-10-08_ConfigLoadValidation.md
+
+- 2026-10-08 | [decision] | services | The String-missing-template fallback in `MergeSameDayRootTags.md:157` is superseded: a String `template` naming no entry becomes an `INVALID_CONFIG` error, not a leaf; inline Hash/Array templates keep working | docs/specs/2026-10-08_ConfigLoadValidation.md
+
 - 2026-10-08 | [outcome] | build | Critique fixes: exec bit `0755` on `build.rb` and snapshot; `# <src path>` marker per Bundle section; snapshot rebuilt (26,355 B, sha256 `1d4ef783...`); README notes snapshot choice, Psych caveat, dated install, Ruby dependency | clone `bundle exec rspec` 346/0; `bundle exec rubocop` 30/0
 
 - 2026-10-08 | [trap] | build | `build.rb` and the snapshot were committed mode `100644`; `core.filemode=false` hid it, so a fresh clone cannot run `./build.rb` and rubocop flags `Lint/ScriptPermission`; fixed via `git update-index --chmod=+x` | `git ls-files -s build.rb` -> `100644`, now `100755`

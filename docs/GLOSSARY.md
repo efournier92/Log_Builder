@@ -57,3 +57,11 @@ A committed, date-named copy of the Bundle at `builds/log-builder_YYYY-MM-DD`. _
 **Drift**
 
 The condition where the current `src/` produces a Bundle whose bytes differ from the newest committed Build Snapshot. _Avoid_: staleness, mismatch.
+
+**Inline Template**
+
+A `template` value supplied directly as a Hash or Array on a task, instead of naming an entry under `task_templates_config`. _Avoid_: anonymous template, embedded template.
+
+**Task Method**
+
+A method on `AddTaskService` named by a task's `method` key, for example `to_specific_date`. _Avoid_: handler, action, verb.

@@ -725,11 +725,11 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 - [X] Address LG mode.
   - [X] Config driven.
   - [X] Add example to README.
-- [ ] Warn of duplicate keys in YAML.
-- [ ] Add begin/rescue blocks to all YAML-related methods.
-  - [ ] Warn user of improper configuration.
-  - [ ] Do not stop running on improper configuration.
-- [ ] Validate inputs to `add_task_service`.
-- [ ] Ask user to open with VIM.
 - [X] Calculate birthday age from year.
+- [ ] Validate the config at load: collect all problems, print one message, exit 1.
+  - [ ] Report a YAML syntax error as a clean message, not a raw backtrace.
+  - [ ] Report duplicate keys, naming the key and its section.
+  - [ ] Check each task entry: `method` exists and its required keys are present.
+  - [ ] Replace the debug rescue that prints `TEXT:` and `TASK:`; a nil template uses the same error.
+- [ ] Echo the written output path on success.
 
