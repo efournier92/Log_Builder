@@ -4,6 +4,8 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [decision] | repo | Tag and Release start now (`vYYYY.MM.DD` at the merge commit, asset = the snapshot, sha256 in notes); the deferred history rewrite (`docs/privacy/history-cleanup.md`) is amended to re-commit the tip snapshot and delete-and-recreate the tag and Release at the rewritten commit, so no pushed tag is force-moved and no tagged tree loses `builds/` | README.md:139
+
 - 2026-10-08 | [trap] | services | `DEFAULT_OUTPUT_DIR = './'` joined as `"#{dir}/..."` printed `Wrote .//DO_...md`, and any user-passed trailing slash doubled too; switched to `File.join` with a `.` default and a `Wrote File > <path>` echo, and rejected an empty `output_dir` that raised a raw `Errno::ENOENT` | src/services/printer_service.rb:4,32-42,96
 
 - 2026-10-08 | [trap] | services | `TagMergeService.printable_children` flattened an all-leaf child list to an array, so a `{{Template}}` inline reference among leaves never expanded; pre-#9 the raw placeholder was written to the log, post-#9 it raised `unresolved placeholder`; removed the flatten so `TaskPrinterService` resolves the reference | test/spec/services/tag_merge_service_spec.rb
@@ -14,7 +16,7 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 - 2026-10-08 | [decision] | repo | Install captured in `bin/install` (POSIX `sh`, to be committed at mode `0755`): installs the newest `builds/log-builder_*` as `log-builder`, destination overridable, resolves its own path through symlinks, rejects a newest build with no shebang, prints zsh and bash `PATH` hints; README points at it | `git add bin/install && git ls-files -s bin/install`
 
-- 2026-10-08 | [decision] | repo | Install keeps every dated Build Snapshot in `builds/` and installs the newest as a stable `log-builder` via `install -m 0755 "$(ls builds/log-builder_* | sort | tail -1)" "$HOME/.local/bin/log-builder"`; build identity stays in the dated filename, no embedded version (deferred) | README.md:113
+- 2026-10-08 | [decision] | repo | Install the newest `builds/log-builder_*` as a stable `log-builder` via `bin/install`, and keep exactly ONE committed snapshot as the drift anchor; added `AppConstants::VERSION` (date-based) and `log-builder --version`; tag/Release rollout deferred until the history cleanup (`docs/privacy/history-cleanup.md`) is resolved | src/constants/app_constants.rb:2
 
 - 2026-10-08 | [trap] | services | A null or non-String/Hash/Array `template` validated clean and attached nothing at exit 0; now rejected with a named-template message | src/services/config_reader_service.rb:390
 

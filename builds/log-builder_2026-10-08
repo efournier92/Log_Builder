@@ -6,6 +6,7 @@ require 'fileutils'
 
 # src/constants/app_constants.rb
 module AppConstants
+VERSION = '2026.10.08'.freeze
 MODES = {
 DO: 'DO',
 LG: 'LG',
@@ -1327,6 +1328,10 @@ end
 end
 
 # src/run.rb
+if ARGV.first == '--version'
+puts "Log Builder #{AppConstants::VERSION}"
+exit 0
+end
 arguments = ARGV
 config_file = arguments[0]
 mode = arguments[1]

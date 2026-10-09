@@ -9,6 +9,7 @@ require 'date'
 
 ROOT = File.expand_path('../..', __dir__)
 DRIFT_MESSAGE = 'Snapshot drift; run `ruby build.rb` and commit the new snapshot in builds/'
+VERSION_MESSAGE = 'Bump AppConstants::VERSION to the snapshot date (src/constants/app_constants.rb)'
 
 describe 'LogBuilderBundler' do
   subject(:bundle) { LogBuilderBundler.build(ROOT) }
@@ -114,12 +115,24 @@ describe 'LogBuilderBundler' do
       expect(snapshots).to_not be_empty, 'No build snapshot found under builds/; run `ruby build.rb`'
       expect(bundle).to eq(File.binread(snapshots.last)), DRIFT_MESSAGE
     else
+      expect(tracked.length).to eq(1), 'Keep exactly one committed snapshot; delete older builds/log-builder_* files'
       newest = tracked.max
       committed, _show_stderr, show_status = Open3.capture3('git', 'show', "HEAD:#{newest}", chdir: ROOT)
 
       expect(show_status.exitstatus).to eq(0)
       expect(bundle).to eq(committed), DRIFT_MESSAGE
     end
+  end
+
+  it 'embeds a version matching the newest snapshot date' do
+    tracked_stdout, _stderr, status = Open3.capture3('git', 'ls-files', '--', 'builds/', chdir: ROOT)
+    expect(status.exitstatus).to eq(0)
+    newest = tracked_stdout.lines.map(&:chomp).select { |path| File.basename(path).start_with?('log-builder_') }.max
+    newest ||= Dir.glob(File.join(ROOT, 'builds', 'log-builder_*')).max
+    expect(newest).to_not be_nil, 'No build snapshot found under builds/; run `ruby build.rb`'
+
+    date = File.basename(newest)[/log-builder_(\d{4}-\d{2}-\d{2})/, 1]
+    expect(bundle).to include("VERSION = '#{date.tr('-', '.')}'"), VERSION_MESSAGE
   end
 
   it 'tracks build.rb and every build snapshot with the executable bit set' do
