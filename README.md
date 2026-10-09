@@ -108,6 +108,8 @@ Hobby_Gear(
   - The `build_spec` drift test and CI fail until the committed snapshot matches `src/`.
 - Bump `AppConstants::VERSION` to the new snapshot's date (`YYYY.MM.DD`) in the same commit.
   - A test fails until the embedded version matches the snapshot filename date.
+- Add a `### YYYY-MM-DD` entry to the Version History for the new version in the same commit.
+  - A test fails until `README.md` has a Version History heading for the current `AppConstants::VERSION`.
 - After adding any file under `src/`, add its path to `SOURCE_ORDER` in `build.rb` (`src/run.rb` stays last).
   - A test fails until you do, and the file is otherwise silently left out of the Bundle.
 

@@ -135,6 +135,16 @@ describe 'LogBuilderBundler' do
     expect(bundle).to include("VERSION = '#{date.tr('-', '.')}'"), VERSION_MESSAGE
   end
 
+  it 'documents the current version in the README Version History' do
+    readme = File.read(File.join(ROOT, 'README.md'))
+    section = readme[/^## Version History\n(.*?)(?=^## )/m, 1]
+    expect(section).to_not be_nil, 'README.md has no Version History section'
+
+    heading = "### #{AppConstants::VERSION.tr('.', '-')}"
+    expect(section).to include("#{heading}\n"),
+                           "Add a Version History entry for #{AppConstants::VERSION} to README.md"
+  end
+
   it 'tracks build.rb and every build snapshot with the executable bit set' do
     stdout, _stderr, status = Open3.capture3('git', 'ls-files', '-s', '--', 'build.rb', 'builds/', chdir: ROOT)
 
