@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+#
+# Pre-commit hook: validate the discovery index and archive before each commit.
+# Enable with: git config core.hooksPath .githooks
+# Bypass once with: git commit --no-verify
+
+set -euo pipefail
+
+exec python3 scripts/check_discovery.py

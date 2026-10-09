@@ -15,3 +15,4 @@ jobs:
           bundler-cache: true
       - run: bundle exec rspec
       - run: bundle exec rubocop
+      - run: python3 scripts/check_discovery.py
