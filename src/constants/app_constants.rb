@@ -1,4 +1,6 @@
 module AppConstants
+  VERSION = '2026.10.08'.freeze
+
   MODES = {
     DO: 'DO',
     LG: 'LG',

@@ -1,5 +1,11 @@
+require_relative './constants/app_constants'
 require_relative './modules/log_builder'
 require_relative './services/input_validation_service'
+
+if ARGV.first == '--version'
+  puts "Log Builder #{AppConstants::VERSION}"
+  exit 0
+end
 
 arguments = ARGV
 
