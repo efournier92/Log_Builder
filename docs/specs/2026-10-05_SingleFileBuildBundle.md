@@ -212,7 +212,7 @@ AllCops:
   - Remove the Ruby Packer fork link and the download-requirements list.
   - State that `ruby build.rb` produces `builds/log-builder_YYYY-MM-DD`, a single self-contained Ruby file.
   - State the runtime requirement: any stock Ruby 2.6 or newer, with only the `yaml` and `fileutils` standard libraries. State that rebuilding from source needs Ruby 3.3 or newer for `prism`.
-  - Give the run and install forms: run `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml` (the repo sample is `test/test_config.yml`); install the dated file with `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/` then `ln -sf ~/bin/log-builder_YYYY-MM-DD ~/bin/log-builder`, into a directory on `PATH`, noting `sudo` only for system directories such as `/usr/local/bin`.
+  - Give the run and install forms: run `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml` (the repo sample is `test/test_config.yml`); install the newest dated file as a stable `log-builder` by running `./bin/install` (destination override as its argument, defaulting to `$HOME/.local/bin`), into a directory on `PATH`, noting the `PATH` export for the destination and `sudo` only for system directories such as `/usr/local/bin`.
   - Note that the generated file is not edited by hand and is regenerated with `ruby build.rb`.
 - Add a `Version History` entry under the existing `### 2026-10-05` heading describing the single-file build and the retirement of the Ruby Packer binary path.
 

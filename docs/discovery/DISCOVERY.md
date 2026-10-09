@@ -4,13 +4,25 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
+- 2026-10-08 | [trap] | services | `DEFAULT_OUTPUT_DIR = './'` joined as `"#{dir}/..."` printed `Wrote .//DO_...md`, and any user-passed trailing slash doubled too; switched to `File.join` with a `.` default and a `Wrote File > <path>` echo, and rejected an empty `output_dir` that raised a raw `Errno::ENOENT` | src/services/printer_service.rb:4,32-42,96
+
+- 2026-10-08 | [trap] | services | `TagMergeService.printable_children` flattened an all-leaf child list to an array, so a `{{Template}}` inline reference among leaves never expanded; pre-#9 the raw placeholder was written to the log, post-#9 it raised `unresolved placeholder`; removed the flatten so `TaskPrinterService` resolves the reference | test/spec/services/tag_merge_service_spec.rb
+
+- 2026-10-08 | [outcome] | build | `SOURCE_ORDER` in `build.rb` was a hand-maintained list with no completeness check, so a new `src/` file could ship absent from the Bundle yet pass the drift test; added a `build_spec` example asserting `src/**/*.rb` equals `SOURCE_ORDER` (sorted) and documented the rule in README Build Overview | test/spec/build_spec.rb
+
+- 2026-10-08 | [outcome] | repo | Exec-bit trap root-caused: `core.filemode=false` hid true modes, so `git add` staged scripts as `100644`; set `core.filemode=true` locally and added `test/spec/executable_modes_spec.rb` (shebang files must be `100755`, other tracked files `100644`) plus `.github/workflows/ci.yml` to gate on any clone; `README.md` was wrongly committed `100755` and reset to `644`; `src/run.rb` has no shebang so its spurious `+x` was reset to `644` | `git ls-files -s README.md`; `bundle exec rspec test/spec/executable_modes_spec.rb`
+
+- 2026-10-08 | [decision] | repo | Install captured in `bin/install` (POSIX `sh`, to be committed at mode `0755`): installs the newest `builds/log-builder_*` as `log-builder`, destination overridable, resolves its own path through symlinks, rejects a newest build with no shebang, prints zsh and bash `PATH` hints; README points at it | `git add bin/install && git ls-files -s bin/install`
+
+- 2026-10-08 | [decision] | repo | Install keeps every dated Build Snapshot in `builds/` and installs the newest as a stable `log-builder` via `install -m 0755 "$(ls builds/log-builder_* | sort | tail -1)" "$HOME/.local/bin/log-builder"`; build identity stays in the dated filename, no embedded version (deferred) | README.md:113
+
 - 2026-10-08 | [trap] | services | A null or non-String/Hash/Array `template` validated clean and attached nothing at exit 0; now rejected with a named-template message | src/services/config_reader_service.rb:390
 
 - 2026-10-08 | [trap] | services | Duplicate detection compared only `key.value`, so YAML `1:` and `"1":` were false duplicates; identity now includes `key.plain` | src/services/config_reader_service.rb:144
 
 - 2026-10-08 | [trap] | services | A list `base` with a per-day String passed LG validation, then `template_base + day_config` raised a raw `TypeError`; now matched by class at load | src/services/config_reader_service.rb:251
 
-- 2026-10-08 | [outcome] | services | Critic hardening: null-template guard, quoted/plain duplicate fix, mixed LG type check, array guard, tag-source first-writer, `Wrote <path>` echo | src/services/printer_service.rb:96
+- 2026-10-08 | [outcome] | services | Critic hardening: null-template guard, quoted/plain duplicate fix, mixed LG type check, array guard, tag-source first-writer, `Wrote File > <path>` echo | src/services/printer_service.rb:96
 
 - 2026-10-08 | [outcome] | services | Hardened validation: atomic writes, load-time placeholder checks, root/section type guards, file plus line numbers, and `day`/`birth_year`/`tag_order` in `validate!` | test/spec/run_spec.rb:83
 
