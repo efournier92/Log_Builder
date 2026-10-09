@@ -18,13 +18,12 @@
   - [Tasks](#tasks)
     - [Task Structure](#task-structure)
     - [Supported Methods](#supported-methods)
-    - [Task Examples](#examples)
+    - [Examples](#examples)
     - [Holidays](#holidays)
-    - [Birthdays](#birthdays)
   - [Same-Day Tag Merging](#same-day-tag-merging)
   - [Tag Order](#tag-order)
+  - [Birthdays](#birthdays)
 - [Version History](#version-history)
-- [TODO Items](#todo-items)
 
 ## Overview
 
@@ -774,12 +773,4 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 
 - Logical retooling to read tasks from a YAML config file.
 - 1st build compiled with Ruby Packer.
-
-## TODO Items
-
-- [X] Address LG mode.
-  - [X] Config driven.
-  - [X] Add example to README.
-- [X] Calculate birthday age from year.
-- [X] Echo the written output path on success, so the user can open it in their editor.
 

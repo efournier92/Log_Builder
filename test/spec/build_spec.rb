@@ -137,7 +137,7 @@ describe 'LogBuilderBundler' do
 
   it 'documents the current version in the README Version History' do
     readme = File.read(File.join(ROOT, 'README.md'))
-    section = readme[/^## Version History\n(.*?)(?=^## )/m, 1]
+    section = readme[/^## Version History\n(.*?)(?=^## |\z)/m, 1]
     expect(section).to_not be_nil, 'README.md has no Version History section'
 
     heading = "### #{AppConstants::VERSION.tr('.', '-')}"
