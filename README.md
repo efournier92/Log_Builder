@@ -9,6 +9,7 @@
   - [Build Overview](#build-overview)
   - [Runtime Requirements](#runtime-requirements)
   - [Running and Installing](#running-and-installing)
+  - [Releasing](#releasing)
 - [Configuration](#configuration)
   - [Configuration Overview](#configuration-overview)
   - [Templates](#templates)
@@ -101,10 +102,12 @@ Hobby_Gear(
 - `ruby build.rb` produces `builds/log-builder_YYYY-MM-DD`, a single self-contained Ruby file containing all of Log Builder's runtime logic.
 - The generated file is never to be edited by hand.
   - **Run `ruby build.rb` to regenerate it.**
-- You'll find multiple snapshots in `builds/`.
-  - Favor the newest file.
+- Keep exactly one snapshot in `builds/`; delete the old dated file when you commit a new one.
+  - The `build_spec` drift test fails if more than one snapshot is tracked.
 - After changing `src/`, run `ruby build.rb` and commit the new dated file in `builds/` in the same commit.
   - The `build_spec` drift test and CI fail until the committed snapshot matches `src/`.
+- Bump `AppConstants::VERSION` to the new snapshot's date (`YYYY.MM.DD`) in the same commit.
+  - A test fails until the embedded version matches the snapshot filename date.
 - After adding any file under `src/`, add its path to `SOURCE_ORDER` in `build.rb` (`src/run.rb` stays last).
   - A test fails until you do, and the file is otherwise silently left out of the Bundle.
 
@@ -133,8 +136,19 @@ Hobby_Gear(
     - zsh: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`
     - bash: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
   - Re-run `./bin/install` to update; it overwrites `log-builder` in place.
-  - The dated files stay in `builds/`, so install an older one to roll back.
-  - The script picks the newest by filename; remove a stray dated file if one appears.
+  - Roll back by checking out an earlier commit's `builds/` snapshot and installing it.
+  - Check the installed build with `log-builder --version`.
+
+### Releasing
+
+- A release runs:
+  - Confirm `AppConstants::VERSION` equals the snapshot date and `builds/` holds one snapshot.
+  - Annotated tag at the merge commit: `git tag -a vYYYY.MM.DD -m "..."` then `git push origin vYYYY.MM.DD`.
+  - `gh release create vYYYY.MM.DD` with notes from the Version History and `builds/log-builder_YYYY-MM-DD` attached.
+  - Record the attached file's `shasum -a 256` in the release notes.
+  - Verify with `git tag --points-at HEAD` and `gh release view vYYYY.MM.DD`.
+  - Never move a pushed tag; a same-day second release appends `.2`.
+- The pending commit-history rewrite (`docs/privacy/history-cleanup.md`) changes every commit hash: after it runs, delete and recreate this tag and Release at the rewritten commit, and ensure the rewrite re-commits the `builds/` snapshot at the tip.
 
 ## Configuration
 
@@ -724,6 +738,7 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 - Writes output through a sibling temp file and renames it into place, so a failed render leaves any existing file untouched.
 - Echoes `Wrote File > <path>` to STDOUT on each successful write (for example `Wrote File > ./DO_2026_01.md`).
 - Expands a `{{Template_Name}}` key that inlines another template even when every sibling is a leaf, instead of writing the raw placeholder into the log.
+- Adds `AppConstants::VERSION` and `log-builder --version`, and keeps a single committed Build Snapshot as the drift anchor.
 
 ### 2026-10-05
 
