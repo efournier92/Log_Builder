@@ -4,19 +4,21 @@ One line per finding, decision, assumption, trap, question, or outcome. Newest f
 
 ## Entries
 
-- 2026-10-08 | [decision] | repo | Tag and Release start now (`vYYYY.MM.DD` at the merge commit, asset = the snapshot, sha256 in notes); the deferred history rewrite (`docs/privacy/history-cleanup.md`) is amended to re-commit the tip snapshot and delete-and-recreate the tag and Release at the rewritten commit, so no pushed tag is force-moved and no tagged tree loses `builds/` | README.md:139
+- 2026-10-09 | [decision] | repo | Keep README Version History canonical (releases mirror it) and gate it in build_spec: CI fails until the VERSION bump ships a matching heading | test/spec/build_spec.rb
 
-- 2026-10-08 | [trap] | services | `DEFAULT_OUTPUT_DIR = './'` joined as `"#{dir}/..."` printed `Wrote .//DO_...md`, and any user-passed trailing slash doubled too; switched to `File.join` with a `.` default and a `Wrote File > <path>` echo, and rejected an empty `output_dir` that raised a raw `Errno::ENOENT` | src/services/printer_service.rb:4,32-42,96
+- 2026-10-09 | [outcome] | repo | Backfilled Releases v2024.04.11, v2024.05.01, v2026.10.05, v2026.10.08 with backdated tags (tagger date sets created_at) and matching builds assets; buildless versions skipped | gh release list
 
-- 2026-10-08 | [trap] | services | `TagMergeService.printable_children` flattened an all-leaf child list to an array, so a `{{Template}}` inline reference among leaves never expanded; pre-#9 the raw placeholder was written to the log, post-#9 it raised `unresolved placeholder`; removed the flatten so `TaskPrinterService` resolves the reference | test/spec/services/tag_merge_service_spec.rb
+- 2026-10-08 | [decision] | repo | Tag and Release start now (`vYYYY.MM.DD` at the merge commit, asset = snapshot); the deferred history rewrite re-creates the tag/Release at the rewritten commit | README.md:144; docs/discovery/ARCHIVE.md
 
-- 2026-10-08 | [outcome] | build | `SOURCE_ORDER` in `build.rb` was a hand-maintained list with no completeness check, so a new `src/` file could ship absent from the Bundle yet pass the drift test; added a `build_spec` example asserting `src/**/*.rb` equals `SOURCE_ORDER` (sorted) and documented the rule in README Build Overview | test/spec/build_spec.rb
+- 2026-10-08 | [trap] | services | Trailing-slash output dir doubled (`Wrote .//DO_...md`) and an empty `output_dir` raised raw `Errno::ENOENT`; fixed via `File.join` | src/services/printer_service.rb:4,32-42,96; docs/discovery/ARCHIVE.md
 
-- 2026-10-08 | [outcome] | repo | Exec-bit trap root-caused: `core.filemode=false` hid true modes, so `git add` staged scripts as `100644`; set `core.filemode=true` locally and added `test/spec/executable_modes_spec.rb` (shebang files must be `100755`, other tracked files `100644`) plus `.github/workflows/ci.yml` to gate on any clone; `README.md` was wrongly committed `100755` and reset to `644`; `src/run.rb` has no shebang so its spurious `+x` was reset to `644` | `git ls-files -s README.md`; `bundle exec rspec test/spec/executable_modes_spec.rb`
+- 2026-10-08 | [trap] | services | All-leaf child lists were flattened, so an inline `{{Template}}` among leaves never expanded; removing the flatten fixed resolution | test/spec/services/tag_merge_service_spec.rb; docs/discovery/ARCHIVE.md
 
-- 2026-10-08 | [decision] | repo | Install captured in `bin/install` (POSIX `sh`, to be committed at mode `0755`): installs the newest `builds/log-builder_*` as `log-builder`, destination overridable, resolves its own path through symlinks, rejects a newest build with no shebang, prints zsh and bash `PATH` hints; README points at it | `git add bin/install && git ls-files -s bin/install`
+- 2026-10-08 | [outcome] | build | Added a `build_spec` example asserting `src/**/*.rb` equals `SOURCE_ORDER`, closing a gap where a new `src/` file could ship absent from the Bundle | test/spec/build_spec.rb; docs/discovery/ARCHIVE.md
 
-- 2026-10-08 | [decision] | repo | Install the newest `builds/log-builder_*` as a stable `log-builder` via `bin/install`, and keep exactly ONE committed snapshot as the drift anchor; added `AppConstants::VERSION` (date-based) and `log-builder --version`; tag/Release rollout deferred until the history cleanup (`docs/privacy/history-cleanup.md`) is resolved | src/constants/app_constants.rb:2
+- 2026-10-08 | [outcome] | repo | Exec-bit trap root-caused: `core.filemode=false` hid modes; added `executable_modes_spec.rb` plus CI, reset README and `src/run.rb` to `644` | `git ls-files -s README.md`; docs/discovery/ARCHIVE.md
+
+- 2026-10-08 | [decision] | repo | Install captured in `bin/install`: installs the newest `builds/log-builder_*` as `log-builder`, rejects a shebang-less build, prints `PATH` hints | `git ls-files -s bin/install`; docs/discovery/ARCHIVE.md
 
 - 2026-10-08 | [trap] | services | A null or non-String/Hash/Array `template` validated clean and attached nothing at exit 0; now rejected with a named-template message | src/services/config_reader_service.rb:390
 

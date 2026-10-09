@@ -4,6 +4,22 @@ Settled entries and over-length entries moved verbatim from the Discovery index.
 
 ## 2026-10-08
 
+Over-length originals moved here when the index was trimmed to the 240-character cap. Each is linked from its shortened index entry except the last, which is superseded and deleted from the index.
+
+- 2026-10-08 | [decision] | repo | Tag and Release start now (`vYYYY.MM.DD` at the merge commit, asset = the snapshot, sha256 in notes); the deferred history rewrite (`docs/privacy/history-cleanup.md`) is amended to re-commit the tip snapshot and delete-and-recreate the tag and Release at the rewritten commit, so no pushed tag is force-moved and no tagged tree loses `builds/` | README.md:139
+
+- 2026-10-08 | [trap] | services | `DEFAULT_OUTPUT_DIR = './'` joined as `"#{dir}/..."` printed `Wrote .//DO_...md`, and any user-passed trailing slash doubled too; switched to `File.join` with a `.` default and a `Wrote File > <path>` echo, and rejected an empty `output_dir` that raised a raw `Errno::ENOENT` | src/services/printer_service.rb:4,32-42,96
+
+- 2026-10-08 | [trap] | services | `TagMergeService.printable_children` flattened an all-leaf child list to an array, so a `{{Template}}` inline reference among leaves never expanded; pre-#9 the raw placeholder was written to the log, post-#9 it raised `unresolved placeholder`; removed the flatten so `TaskPrinterService` resolves the reference | test/spec/services/tag_merge_service_spec.rb
+
+- 2026-10-08 | [outcome] | build | `SOURCE_ORDER` in `build.rb` was a hand-maintained list with no completeness check, so a new `src/` file could ship absent from the Bundle yet pass the drift test; added a `build_spec` example asserting `src/**/*.rb` equals `SOURCE_ORDER` (sorted) and documented the rule in README Build Overview | test/spec/build_spec.rb
+
+- 2026-10-08 | [outcome] | repo | Exec-bit trap root-caused: `core.filemode=false` hid true modes, so `git add` staged scripts as `100644`; set `core.filemode=true` locally and added `test/spec/executable_modes_spec.rb` (shebang files must be `100755`, other tracked files `100644`) plus `.github/workflows/ci.yml` to gate on any clone; `README.md` was wrongly committed `100755` and reset to `644`; `src/run.rb` has no shebang so its spurious `+x` was reset to `644` | `git ls-files -s README.md`; `bundle exec rspec test/spec/executable_modes_spec.rb`
+
+- 2026-10-08 | [decision] | repo | Install captured in `bin/install` (POSIX `sh`, to be committed at mode `0755`): installs the newest `builds/log-builder_*` as `log-builder`, destination overridable, resolves its own path through symlinks, rejects a newest build with no shebang, prints zsh and bash `PATH` hints; README points at it | `git add bin/install && git ls-files -s bin/install`
+
+- 2026-10-08 | [decision] | repo | Install the newest `builds/log-builder_*` as a stable `log-builder` via `bin/install`, and keep exactly ONE committed snapshot as the drift anchor; added `AppConstants::VERSION` (date-based) and `log-builder --version`; tag/Release rollout deferred until the history cleanup (`docs/privacy/history-cleanup.md`) is resolved | src/constants/app_constants.rb:2
+
 - 2026-10-08 | [outcome] | services | Load validation shipped: `validate!` raises `InvalidConfigError` with every problem, reported to STDERR and exit 1 before any write; suite 367/0, rubocop 30/0 | docs/specs/2026-10-08_ConfigLoadValidation.md
 
 - 2026-10-08 | [decision] | services | Config load validation approved: one pass collects all problems to STDERR and exits 1 before any file is written; method whitelist from `AddTaskService.instance_methods(false)`; per-method conditional required keys; strict `Integer` types; unknown top-level keys rejected; missing sections error only when mode and tasks need them; a String template name must resolve while inline Hash/Array templates pass; a surviving `{{...}}` except `{{TASK.` is an error | docs/specs/2026-10-08_ConfigLoadValidation.md

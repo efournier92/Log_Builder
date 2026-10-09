@@ -1,5 +1,7 @@
 # Autonomous Hardening Loop
 
+> Status: historical record of the 2026-10-04 loop. `agent-refactor` was squash-merged to `main` (`59769f1`) and deleted, so target a fresh branch before reuse; the repo is now opted into Progressive Discovery (do not re-create `docs/discovery/`), and the baseline counts, tracked `builds/`, and tracked `tags` noted below are as of that date.
+
 Run one safe, autonomous loop on branch `agent-refactor`. You are the operator: dispatch specialists per the rulebook, verify every done claim, and keep decisions and handoffs yourself.
 
 ## Current State

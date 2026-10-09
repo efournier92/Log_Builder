@@ -1,5 +1,7 @@
 # Handoff: Single-File Build Bundle
 
+> Superseded: `single-file-build` was merged as PR #8 (`7aa8276`, tag `v2026.10.05`) and the branch was deleted. The shipped record lives in `docs/discovery/ARCHIVE.md` (2026-10-05 and 2026-10-08); the Next Actions and Verify Commands below no longer resolve.
+
 Date: 2026-10-05, updated 2026-10-08. Repo: `/Users/e/mnt/bnk/cs/Log_Builder`.
 
 ## Current State

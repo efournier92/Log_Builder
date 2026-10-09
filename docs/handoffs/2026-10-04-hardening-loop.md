@@ -1,5 +1,7 @@
 # Hardening Loop Handoff - 2026-10-04
 
+> Superseded: the `agent-refactor` loop this handoff resumes was squash-merged to `main` (`59769f1`) and the branch was deleted. The settled record lives in `docs/discovery/ARCHIVE.md` (2026-10-04); the Next Actions and Verify Commands below no longer resolve.
+
 ## Current State
 
 - Repo: Log_Builder (Ruby CLI). Branch `agent-refactor`, 15 commits ahead of `main`, 11 unpushed (tracking `origin/agent-refactor`, 0 behind).
