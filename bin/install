@@ -1,0 +1,53 @@
+#!/bin/sh
+# Install the newest Log Builder build as a stable `log-builder` command.
+#
+# Usage: bin/install [DESTINATION_DIR]
+# Default destination is $HOME/.local/bin.
+set -eu
+
+script=$0
+case "$script" in
+  */*) ;;
+  *) script=$(command -v "$script") || { echo "Cannot locate $0" >&2; exit 1; } ;;
+esac
+while [ -L "$script" ]; do
+  target=$(readlink "$script")
+  case "$target" in
+    /*) script=$target ;;
+    *) script=$(dirname -- "$script")/$target ;;
+  esac
+done
+script_dir=$(CDPATH= cd -- "$(dirname -- "$script")" && pwd)
+repo_dir=$(dirname -- "$script_dir")
+build_dir="$repo_dir/builds"
+
+dest=${1:-"$HOME/.local/bin"}
+
+newest=$(LC_ALL=C ls "$build_dir"/log-builder_* 2>/dev/null | LC_ALL=C sort | tail -n 1)
+if [ -z "$newest" ]; then
+  echo "No build found in $build_dir. Run 'ruby build.rb' first." >&2
+  exit 1
+fi
+
+if [ "$(head -c 2 "$newest")" != '#!' ]; then
+  echo "Newest build $newest has no shebang; it looks partial or stray. Rebuild or remove it." >&2
+  exit 1
+fi
+
+if [ -e "$dest" ] && [ ! -d "$dest" ]; then
+  echo "Destination exists and is not a directory: $dest" >&2
+  exit 1
+fi
+
+mkdir -p "$dest"
+install -m 0755 "$newest" "$dest/log-builder"
+echo "Installed $(basename -- "$newest") -> $dest/log-builder"
+
+case ":$PATH:" in
+  *":$dest:"*) ;;
+  *)
+    echo "Note: $dest is not on your PATH. Add it, for example:"
+    echo "  zsh:  echo 'export PATH=\"$dest:\$PATH\"' >> ~/.zshrc"
+    echo "  bash: echo 'export PATH=\"$dest:\$PATH\"' >> ~/.bashrc"
+    ;;
+esac

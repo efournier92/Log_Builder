@@ -8,6 +8,7 @@ require 'fileutils'
 require 'date'
 
 ROOT = File.expand_path('../..', __dir__)
+DRIFT_MESSAGE = 'Snapshot drift; run `ruby build.rb` and commit the new snapshot in builds/'
 
 describe 'LogBuilderBundler' do
   subject(:bundle) { LogBuilderBundler.build(ROOT) }
@@ -65,6 +66,13 @@ describe 'LogBuilderBundler' do
     end
   end
 
+  it 'lists every file under src/ in SOURCE_ORDER' do
+    on_disk = Dir.glob(File.join(ROOT, 'src', '**', '*.rb')).sort.map { |path| path.delete_prefix("#{ROOT}/") }
+
+    expect(on_disk).to eq(LogBuilderBundler::SOURCE_ORDER.sort),
+                       'src/ and SOURCE_ORDER differ; add the file to SOURCE_ORDER in build.rb (src/run.rb stays last)'
+  end
+
   it 'is deterministic across calls' do
     expect(LogBuilderBundler.build(ROOT)).to eq(bundle)
   end
@@ -104,13 +112,13 @@ describe 'LogBuilderBundler' do
       snapshots = Dir.glob(File.join(ROOT, 'builds', 'log-builder_*')).sort
 
       expect(snapshots).to_not be_empty, 'No build snapshot found under builds/; run `ruby build.rb`'
-      expect(bundle).to eq(File.binread(snapshots.last))
+      expect(bundle).to eq(File.binread(snapshots.last)), DRIFT_MESSAGE
     else
       newest = tracked.max
       committed, _show_stderr, show_status = Open3.capture3('git', 'show', "HEAD:#{newest}", chdir: ROOT)
 
       expect(show_status.exitstatus).to eq(0)
-      expect(bundle).to eq(committed)
+      expect(bundle).to eq(committed), DRIFT_MESSAGE
     end
   end
 

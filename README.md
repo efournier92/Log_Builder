@@ -7,6 +7,8 @@
 - [Sample Output](#sample-output)
 - [Build Packaging](#build-packaging)
   - [Build Overview](#build-overview)
+  - [Runtime Requirements](#runtime-requirements)
+  - [Running and Installing](#running-and-installing)
 - [Configuration](#configuration)
   - [Configuration Overview](#configuration-overview)
   - [Templates](#templates)
@@ -18,6 +20,7 @@
     - [Task Examples](#examples)
     - [Holidays](#holidays)
     - [Birthdays](#birthdays)
+  - [Same-Day Tag Merging](#same-day-tag-merging)
   - [Tag Order](#tag-order)
 - [Version History](#version-history)
 - [TODO Items](#todo-items)
@@ -100,23 +103,38 @@ Hobby_Gear(
   - **Run `ruby build.rb` to regenerate it.**
 - You'll find multiple snapshots in `builds/`.
   - Favor the newest file.
+- After changing `src/`, run `ruby build.rb` and commit the new dated file in `builds/` in the same commit.
+  - The `build_spec` drift test and CI fail until the committed snapshot matches `src/`.
+- After adding any file under `src/`, add its path to `SOURCE_ORDER` in `build.rb` (`src/run.rb` stays last).
+  - A test fails until you do, and the file is otherwise silently left out of the Bundle.
 
 ### Runtime Requirements
 
 - The generated file runs on any Ruby 2.6+ version.
   - Only requires `yaml` and `fileutils` standard libraries.
+  - The floor is not covered by CI; after each build, verify with `ruby -c builds/log-builder_*` on a 2.6 interpreter.
 - Config parsing uses [Psych](https://github.com/ruby/psych).
   - A config with YAML aliases or anchors loads on Ruby 2.6 (Psych 3) but raises `Psych::AliasesNotEnabled` on Ruby 3.1 and newer.
   - Avoid aliases for cross-version portability.
 - Rebuilding from source requires Ruby 3.3 or newer so `prism` is available.
+  - The dev Ruby is pinned in `.tool-versions` (`asdf` or `mise`); CI runs Ruby 3.4.
 
 ### Running and Installing
 
 - See `test/test_config.yml` for a sample config file.
-- Run the generated file directly.
+- Run a build directly, no install needed.
   - Example: `ruby builds/log-builder_YYYY-MM-DD YOUR_CONFIG.yml`
-- Install the generated file as `log-builder` in a directory on your `PATH`.
-  - `install -m 0755 builds/log-builder_YYYY-MM-DD ~/bin/log-builder`
+- Install the newest build as a stable `log-builder` command.
+  - `./bin/install ~/.local/bin` installs it as `~/.local/bin/log-builder`.
+    - `~/.local/bin` is (YOUR PREFERRED INSTALL DIRECTORY); substitute any directory on your `PATH`.
+  - System directories such as `/usr/local/bin` need `sudo`.
+    - Example: `sudo ./bin/install /usr/local/bin`
+  - Add the install directory to your `PATH` if it is not already there.
+    - zsh: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`
+    - bash: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc`
+  - Re-run `./bin/install` to update; it overwrites `log-builder` in place.
+  - The dated files stay in `builds/`, so install an older one to roll back.
+  - The script picks the newest by filename; remove a stray dated file if one appears.
 
 ## Configuration
 
@@ -131,6 +149,7 @@ Hobby_Gear(
   - Denoted by `{{ }}` syntax.
   - Values to populate can be supplied from configured tasks.
     - Via the `template_variables` configuration property.
+  - A template can inline another named template by using `'{{Template_Name}}':` as a key where that template's contents should appear.
 
 ### Templates
 
@@ -703,7 +722,8 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
   - Rejects a null, Integer, or otherwise non-String, non-mapping, non-list `template` instead of silently attaching nothing.
   - Requires every `lg_templates_config` value to match the `base` type, String or list, so a mixed config cannot raise a raw `TypeError` during LG rendering.
 - Writes output through a sibling temp file and renames it into place, so a failed render leaves any existing file untouched.
-- Echoes `Wrote <path>` to STDOUT on each successful write.
+- Echoes `Wrote File > <path>` to STDOUT on each successful write (for example `Wrote File > ./DO_2026_01.md`).
+- Expands a `{{Template_Name}}` key that inlines another template even when every sibling is a leaf, instead of writing the raw placeholder into the log.
 
 ### 2026-10-05
 
@@ -723,6 +743,11 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 - Adds optional `tag_order_config` root tag ordering, applied after same-day merging, with the reserved `~~OTHER~~` marker for unlisted tags, and a raise when a configured tag uses the reserved marker name.
 - Changes `to_each_day` to reject a supplied `day_name` (valid or not), matching `to_each_weekday` and `to_each_weekend`.
 
+### 2025-01-26
+
+- Implement config-drive LG mode.
+- Deprecate hard-coded LG strings from the codebase.
+
 ### 2024-05-01
 
 - Resolves a bug preventing `to_nth_day_in_each_month` from functioning correctly the `nth_day` attribute.
@@ -733,17 +758,11 @@ The age is the build year minus `birth_year`, rendered as a plain integer. When 
 - Logical retooling to read tasks from a YAML config file.
 - 1st build compiled with Ruby Packer.
 
-### 2025-01-26
-
-- Implement config-drive LG mode.
-- Deprecate hard-coded LG strings from the codebase.
-
 ## TODO Items
 
 - [X] Address LG mode.
   - [X] Config driven.
   - [X] Add example to README.
 - [X] Calculate birthday age from year.
-- [X] Echo the written output path on success.
-- [ ] Ask user to open with VIM.
+- [X] Echo the written output path on success, so the user can open it in their editor.
 

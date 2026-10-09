@@ -102,8 +102,6 @@ class TagMergeService
   end
 
   def self.printable_children(children)
-    return children.map { |child| child[:name] } if children.all? { |child| child[:leaf] }
-
     children.each_with_object({}) do |child, tree|
       tree[child[:name]] = child[:leaf] ? nil : printable_children(child[:children])
     end
