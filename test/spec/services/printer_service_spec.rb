@@ -36,6 +36,20 @@ describe PrinterService do
         expect(printer.do_file_name(2020)).to eq('./out/DO_2020.md')
       end
     end
+
+    context 'given no output directory' do
+      it 'returns the file name under the current directory' do
+        expect(@printer.do_file_name(2020, 1)).to eq('./DO_2020_01.md')
+      end
+    end
+
+    context 'given an output directory with a trailing slash' do
+      it 'does not double the separator' do
+        printer = PrinterService.new('./test/test_config.yml', './out/')
+
+        expect(printer.do_file_name(2020, 1)).to eq('./out/DO_2020_01.md')
+      end
+    end
   end
 
   describe '#lg_file_name' do
@@ -113,6 +127,19 @@ describe PrinterService do
 
           expect(File.read(target)).to eq("pre-existing\n")
           expect(Dir.children(tmp_dir)).to eq(['DO_2020.md'])
+        end
+      end
+    end
+
+    context 'given the default output directory' do
+      it 'prints the path without a leading ./ or a doubled slash' do
+        Dir.mktmpdir do |tmp_dir|
+          Dir.chdir(tmp_dir) do
+            printer = PrinterService.new('./test/test_config.yml')
+
+            expect { printer.atomic_write(printer.do_file_name(2020)) { |out_file| out_file.puts('x') } }
+              .to output("Wrote File > ./DO_2020.md\n").to_stdout
+          end
         end
       end
     end

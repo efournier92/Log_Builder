@@ -15,7 +15,7 @@ def valid_month?(month, mode)
 end
 
 def valid_output_dir?(output_dir)
-  output_dir.is_a?(String)
+  output_dir.is_a?(String) && !output_dir.empty?
 end
 
 def lg_mode?(mode)

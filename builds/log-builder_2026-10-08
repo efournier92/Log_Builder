@@ -833,7 +833,6 @@ TaskPrinterService.new(config_file, sources[root[:name]]).print(tree)
 end.join
 end
 def self.printable_children(children)
-return children.map { |child| child[:name] } if children.all? { |child| child[:leaf] }
 children.each_with_object({}) do |child, tree|
 tree[child[:name]] = child[:leaf] ? nil : printable_children(child[:children])
 end
@@ -1066,7 +1065,7 @@ end
 
 # src/services/printer_service.rb
 class PrinterService
-DEFAULT_OUTPUT_DIR = './'.freeze
+DEFAULT_OUTPUT_DIR = '.'.freeze
 def initialize(config_file, output_dir = DEFAULT_OUTPUT_DIR)
 @config_file = config_file
 @output_dir = output_dir || DEFAULT_OUTPUT_DIR
@@ -1090,13 +1089,13 @@ def markdown_block_opener
 end
 def do_file_name(year, month = nil)
 if !month.nil?
-"#{@output_dir}/DO_#{format('%04d', year)}_#{format('%02d', month)}.md"
+File.join(@output_dir, "DO_#{format('%04d', year)}_#{format('%02d', month)}.md")
 else
-"#{@output_dir}/DO_#{format('%04d', year)}.md"
+File.join(@output_dir, "DO_#{format('%04d', year)}.md")
 end
 end
 def lg_file_name(year)
-"#{@output_dir}/LG_#{format('%04d', year)}.md"
+File.join(@output_dir, "LG_#{format('%04d', year)}.md")
 end
 def print_do_year(do_year)
 make_out_dir
@@ -1143,7 +1142,7 @@ temp_path = "#{path}.tmp.#{Process.pid}"
 result = nil
 File.open(temp_path, 'w') { |out_file| result = yield out_file }
 File.rename(temp_path, path)
-puts "Wrote #{path}"
+puts "Wrote File > #{path}"
 result
 ensure
 File.delete(temp_path) if File.exist?(temp_path)
@@ -1229,7 +1228,7 @@ def valid_month?(month, mode)
 lg_mode?(mode) || all_mode?(month) || valid_month_number?(month)
 end
 def valid_output_dir?(output_dir)
-output_dir.is_a?(String)
+output_dir.is_a?(String) && !output_dir.empty?
 end
 def lg_mode?(mode)
 mode == AppConstants::MODES[:LG]

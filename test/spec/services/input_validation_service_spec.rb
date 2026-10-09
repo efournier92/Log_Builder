@@ -298,6 +298,12 @@ describe 'input_validation_service' do
       end
     end
 
+    context 'given an empty String' do
+      it 'returns false' do
+        expect(valid_output_dir?('')).to be false
+      end
+    end
+
     context 'given nil' do
       it 'returns false' do
         expect(valid_output_dir?(nil)).to be false

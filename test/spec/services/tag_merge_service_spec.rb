@@ -351,6 +351,14 @@ describe TagMergeService do
         "Composed_Task(\n  {{TASK.Composed_Level_2a}},\n  {{TASK.Composed_Level_2b}},\n),\n"
       )
     end
+
+    it 'expands an inline template reference whose siblings are all leaves' do
+      roots = TagMergeService.roots_from_template('Body' => { '{{2_Dimensional}}' => nil })
+
+      rendered = TagMergeService.render(roots, config_file)
+
+      expect(rendered).to eq("Body(\n  Level_1(\n    Level_2,\n  ),\n),\n")
+    end
   end
 
   describe 'multi-day isolation' do

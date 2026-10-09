@@ -1,7 +1,7 @@
 require 'fileutils'
 
 class PrinterService
-  DEFAULT_OUTPUT_DIR = './'.freeze
+  DEFAULT_OUTPUT_DIR = '.'.freeze
 
   def initialize(config_file, output_dir = DEFAULT_OUTPUT_DIR)
     @config_file = config_file
@@ -31,14 +31,14 @@ class PrinterService
 
   def do_file_name(year, month = nil)
     if !month.nil?
-      "#{@output_dir}/DO_#{format('%04d', year)}_#{format('%02d', month)}.md"
+      File.join(@output_dir, "DO_#{format('%04d', year)}_#{format('%02d', month)}.md")
     else
-      "#{@output_dir}/DO_#{format('%04d', year)}.md"
+      File.join(@output_dir, "DO_#{format('%04d', year)}.md")
     end
   end
 
   def lg_file_name(year)
-    "#{@output_dir}/LG_#{format('%04d', year)}.md"
+    File.join(@output_dir, "LG_#{format('%04d', year)}.md")
   end
 
   def print_do_year(do_year)
@@ -93,7 +93,7 @@ class PrinterService
     result = nil
     File.open(temp_path, 'w') { |out_file| result = yield out_file }
     File.rename(temp_path, path)
-    puts "Wrote #{path}"
+    puts "Wrote File > #{path}"
     result
   ensure
     File.delete(temp_path) if File.exist?(temp_path)
